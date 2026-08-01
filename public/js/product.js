@@ -1,5 +1,5 @@
 /**
- * Netsorna Product Page Engine
+ * Netsorna Product Page Controller
  * Handles SKU lookup, dynamic custom uploads, R2 URL negotiation, copyright modal, & purchasing locks.
  */
 
@@ -7,21 +7,20 @@ let currentProduct = null;
 let uploadedFileKey = null;
 let termsAccepted = false;
 
-// 1. Get SKU from URL query param
+// 1. Extract SKU from URL query parameter
 function getSkuFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('sku') || 'NET-FRM-001'; // Default fallback
+  return params.get('sku') || 'NET-FRM-001';
 }
 
-// 2. Fetch specific product JSON from backend KV/Storage API
+// 2. Fetch specific product data from serverless KV or local fallback
 async function loadProductData(sku) {
   try {
-    const response = await fetch(`/api/products?sku=${sku}`);
-    if (!response.ok) throw new Error('Product not found');
+    const response = await fetch(`/api/products?sku=${encodeURIComponent(sku)}`);
+    if (!response.ok) throw new Error('Product lookup failed');
     currentProduct = await response.json();
   } catch (err) {
     console.warn('Fallback to local registry for SKU:', sku);
-    // Local fallback matching structure
     currentProduct = {
       sku: sku,
       title: sku.includes('CUST') ? 'PORTRAIT RELIEF (1-5 FACES)' : 'FROME ARTWORK',
@@ -34,13 +33,15 @@ async function loadProductData(sku) {
   renderProductUI();
 }
 
-// 3. Render HTML structure based on item properties & custom type
+// 3. Render Product UI & Dynamic Sections
 function renderProductUI() {
   const container = document.getElementById('productContainer');
   if (!container || !currentProduct) return;
 
   const isCustom = currentProduct.customType && currentProduct.customType !== 'none';
   const isHighValue = currentProduct.price >= 15000;
+
+  document.title = `${currentProduct.title} — Netsorna`;
 
   container.innerHTML = `
     <div class="product-gallery">
@@ -50,7 +51,7 @@ function renderProductUI() {
       ${currentProduct.images.length > 1 ? `
         <div class="thumbnail-row">
           ${currentProduct.images.map((img, idx) => `
-            <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)" />
+            <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)" alt="Thumbnail ${idx + 1}" />
           `).join('')}
         </div>
       ` : ''}
@@ -59,14 +60,14 @@ function renderProductUI() {
     <div class="product-details-box">
       <div>
         <h1 class="product-header-title">${currentProduct.title}</h1>
-        <span class="product-price-tag">R ${currentProduct.price.toLocaleString()}</span>
+        <div class="product-price-tag">R ${currentProduct.price.toLocaleString()}</div>
       </div>
 
       <p class="product-description">${currentProduct.description}</p>
 
       ${isCustom ? `
         <div class="custom-upload-section">
-          <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">
+          <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 6px;">
             Upload Art Reference / Image (Required)
           </label>
           <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
@@ -77,24 +78,27 @@ function renderProductUI() {
             </svg>
             <p><strong>Click to upload photo</strong> (JPEG, PNG, max 10MB)</p>
           </div>
-          <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)" />
-          <div id="filePreviewContainer" style="margin-top:10px;"></div>
+          <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)" />
+          <div id="filePreviewContainer" style="margin-top: 10px;"></div>
         </div>
       ` : ''}
 
-      <div class="quantity-selector">
-        <button class="qty-btn" onclick="adjustQty(-1)">-</button>
-        <input type="number" id="productQty" class="qty-input" value="1" min="1" readonly />
-        <button class="qty-btn" onclick="adjustQty(1)">+</button>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 0.85rem; font-weight: 600;">Quantity</label>
+        <div class="quantity-selector">
+          <button type="button" class="qty-btn" onclick="adjustQty(-1)">-</button>
+          <input type="number" id="productQty" class="qty-input" value="1" min="1" readonly />
+          <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
+        </div>
       </div>
 
-      <div class="action-buttons-wrapper">
+      <div class="action-buttons-wrapper" style="margin-top: 12px;">
         ${isHighValue ? `
-          <a href="/whatsapp-inquiry.html?sku=${currentProduct.sku}" class="btn btn-solid btn-lg" style="width:100%;">
+          <a href="https://wa.me/27000000000?text=${encodeURIComponent('Hi Netsorna, I would like to inquire about: ' + currentProduct.title + ' (SKU: ' + currentProduct.sku + ')')}" class="btn btn-solid btn-lg" style="width: 100%; text-align: center;" target="_blank" rel="noopener">
             Inquire via WhatsApp
           </a>
         ` : `
-          <button id="addToCartBtn" class="btn btn-solid btn-lg" style="width:100%;" ${isCustom ? 'disabled' : ''} onclick="handleAddToCart()">
+          <button id="addToCartBtn" class="btn btn-solid btn-lg" style="width: 100%;" ${isCustom ? 'disabled' : ''} onclick="handleAddToCart()">
             ${isCustom ? 'Upload Image First' : 'Add to Cart'}
           </button>
         `}
@@ -107,20 +111,22 @@ function renderProductUI() {
 
 // 4. Image Gallery Switcher
 function switchImage(src, element) {
-  document.getElementById('mainProductImage').src = src;
+  const mainImg = document.getElementById('mainProductImage');
+  if (mainImg) mainImg.src = src;
   document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
   element.classList.add('active');
 }
 
-// 5. Quantity Adjuster
+// 5. Quantity Adjustment
 function adjustQty(change) {
   const input = document.getElementById('productQty');
-  let val = parseInt(input.value) + change;
+  if (!input) return;
+  let val = parseInt(input.value, 10) + change;
   if (val < 1) val = 1;
   input.value = val;
 }
 
-// 6. Direct File Upload handling to Cloudflare Presigned R2 API
+// 6. Direct Binary R2 Upload via Cloudflare Presigned Worker
 async function handleFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -133,21 +139,22 @@ async function handleFileSelect(event) {
   `;
 
   try {
-    // Request presigned URL from Cloudflare Worker endpoint
     const res = await fetch('/api/upload-url', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filename: file.name, contentType: file.type })
     });
     
-    if (!res.ok) throw new Error('Presigned URL generation failed');
+    if (!res.ok) throw new Error('Presigned URL negotiation failed');
     const { uploadUrl, fileKey } = await res.json();
 
-    // Upload directly to R2 bucket
-    await fetch(uploadUrl, {
+    const uploadRes = await fetch(uploadUrl, {
       method: 'PUT',
       headers: { 'Content-Type': file.type },
       body: file
     });
+
+    if (!uploadRes.ok) throw new Error('R2 direct upload failed');
 
     uploadedFileKey = fileKey;
 
@@ -158,12 +165,11 @@ async function handleFileSelect(event) {
       </div>
     `;
 
-    // Open Agreement Modal prior to enabling Add To Cart
     const modal = document.getElementById('customAgreementModal');
     if (modal) modal.showModal();
 
   } catch (err) {
-    // Fallback simulate upload key if serverless worker is local/unlinked
+    console.error('Upload Error:', err);
     uploadedFileKey = `mock-upload-${Date.now()}-${file.name}`;
     previewBox.innerHTML = `
       <div class="file-preview-strip">
@@ -179,12 +185,16 @@ async function handleFileSelect(event) {
 function removeUploadedFile() {
   uploadedFileKey = null;
   termsAccepted = false;
-  document.getElementById('fileInput').value = '';
-  document.getElementById('filePreviewContainer').innerHTML = '';
+  const fileInput = document.getElementById('fileInput');
+  const previewBox = document.getElementById('filePreviewContainer');
+  
+  if (fileInput) fileInput.value = '';
+  if (previewBox) previewBox.innerHTML = '';
+  
   updateAddButtonState();
 }
 
-// 7. Copyright & Agreement Modal Control
+// 7. Modal Control & Locking
 function setupAgreementModal() {
   const modal = document.getElementById('customAgreementModal');
   const checkbox = document.getElementById('agreeTermsCheckbox');
@@ -192,6 +202,9 @@ function setupAgreementModal() {
   const closeBtn = document.getElementById('closeAgreementBtn');
 
   if (!modal || !checkbox || !confirmBtn) return;
+
+  checkbox.checked = false;
+  confirmBtn.disabled = true;
 
   checkbox.addEventListener('change', (e) => {
     confirmBtn.disabled = !e.target.checked;
@@ -224,11 +237,12 @@ function updateAddButtonState() {
   }
 }
 
-// 8. Add to Cart Handler
+// 8. Add to Cart Logic
 function handleAddToCart() {
   if (!currentProduct) return;
 
-  const qty = parseInt(document.getElementById('productQty').value) || 1;
+  const qtyInput = document.getElementById('productQty');
+  const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
   const cart = getCart();
 
   const cartItem = {
@@ -252,7 +266,7 @@ function handleAddToCart() {
   showToast(`${currentProduct.title} added to cart.`);
 }
 
-// Init execution
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
   const sku = getSkuFromUrl();
   loadProductData(sku);
