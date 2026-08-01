@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle">Artwork — Netsorna</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" id="canonicalUrl" href="https://netsorna.website/product.html" />
+
+  <!-- Open Graph / WhatsApp & Social Sharing -->
+  <meta property="og:type" content="og:product" />
+  <meta property="og:url" id="ogUrl" content="https://netsorna.website/product.html" />
+  <meta property="og:title" id="ogTitle" content="Artwork — Netsorna" />
+  <meta property="og:description" id="ogDescription" content="Personalized fine art and relief sculptures designed for contemporary interior spaces." />
+  <meta property="og:image" id="ogImage" content="https://netsorna.website/images/icons/horizontal_logo.svg" />
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+
+  <!-- Global Favicon Setup -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/images/icons/horizontal_logo.svg" />
+
+  <!-- Core Styles -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/product.css" />
+</head>
+<body class="product-page-body">
+
+  <!-- Floating Expandable Glass Header -->
+  <div class="navbar-wrapper">
+    <header class="navbar" id="navbar">
+      <!-- Top Action Bar -->
+      <div class="navbar-bar">
+        <button class="menu-btn" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="navDrawer" id="menuToggle">
+          <!-- Hamburger Icon -->
+          <svg class="icon-hamburger" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <!-- Close (X) Icon -->
+          <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Global Brand Logo -->
+        <a href="/index.html" class="brand-logo" aria-label="Netsorna Home">
+          <img 
+            src="/images/icons/horizontal_logo.svg" 
+            alt="Netsorna Logo" 
+            class="logo-img" 
+            width="160"
+            height="40"
+            onerror="this.outerHTML='<span class=\'logo-text\'>NETSORNA.</span>'"
+          />
+        </a>
+
+        <a href="/cart.html" class="cart-btn" aria-label="View Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </a>
+      </div>
+
+      <!-- Integrated Expandable Menu Content -->
+      <nav class="nav-drawer" id="navDrawer" aria-hidden="true">
+        <ul class="nav-links">
+          <li><a href="/index.html">Home</a></li>
+          <li><a href="/shop.html">Shop Artworks</a></li>
+          <li><a href="/featured.html">Featured Program</a></li>
+          <li><a href="/custom-order.html">Custom Orders</a></li>
+          <li><a href="/blog.html">Blog & Stories</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </nav>
+    </header>
+  </div>
+
+  <!-- Main Hero Viewport Container -->
+  <main class="product-page-wrapper">
+    
+    <!-- Full-Width Media Hero Carousel -->
+    <section class="full-width-hero">
+      <div class="hero-slider" id="heroSlider">
+        <!-- Rendered dynamically by product.js -->
+      </div>
+
+      <!-- Image Indicator locked at bottom-right -->
+      <div class="hero-counter-badge" id="imageCounter">1 / 1</div>
+    </section>
+
+    <!-- Content Block below Hero -->
+    <div class="product-details-container">
+      
+      <!-- Minimalist Editorial Title Section -->
+      <section class="editorial-header">
+        <h1 class="product-title-lg" id="productTitle">Loading Artwork...</h1>
+        <div class="product-price-lg" id="productPrice">R --</div>
+        <p class="shipping-tagline">Nationwide Courier Across South Africa</p>
+      </section>
+
+      <!-- Specifications List -->
+      <section class="editorial-specs">
+        <ul id="productSpecs">
+          <!-- Rendered dynamically by product.js -->
+        </ul>
+      </section>
+
+      <!-- Interactive Purchase Actions -->
+      <section class="product-purchase-box">
+        <div class="option-row">
+          <label id="optionLabel">Mounting & Finish</label>
+          <div class="option-chips" id="optionChips">
+            <button class="chip active">Floating Mount</button>
+            <button class="chip">Matte Black Frame</button>
+            <button class="chip">Raw Acrylic Edge</button>
+          </div>
+        </div>
+
+        <div class="product-purchase-actions" id="purchaseActions">
+          <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
+          <button class="btn btn-solid" id="buyNowBtn">Buy Now</button>
+        </div>
+      </section>
+
+      <!-- Extended Artwork Description -->
+      <section class="product-narrative">
+        <h3>About the Piece</h3>
+        <p class="product-description" id="productDescription">
+          Loading artwork details...
+        </p>
+      </section>
+
+      <!-- Fully Responsive "You Might Also Like" Section -->
+      <section class="stories-section">
+        <h2 class="section-title">You Might Also Like</h2>
+        <div class="product-grid" id="relatedGrid">
+          <!-- Rendered dynamically by product.js -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo">netsorna.</span>
+        <p>Curated fine art, personalized acrylic UV prints, and custom interior pieces.</p>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="/shop.html">Catalogue</a></li>
+          <li><a href="/featured.html">Featured Partner</a></li>
+          <li><a href="/custom-order.html">Custom Orders</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Legal & Terms</h4>
+        <ul>
+          <li><a href="/terms.html">Terms of Service</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+          <li><a href="/refunds.html">Refund Policy</a></li>
+          <li><a href="/ownership.html">Content Ownership</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-newsletter">
+        <h4>Stay Updated</h4>
+        <p>Subscribe to receive notifications for new drops and partner releases.</p>
+        <form class="newsletter-form" action="/api/newsletter" method="POST">
+          <input type="email" placeholder="Enter your email" required />
+          <button type="submit" class="btn btn-solid">Join</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Netsorna. All rights reserved.</span>
+      <span>Fine Art & Collectibles</span>
+    </div>
+  </footer>
+
+  <!-- Modal / Dialog for 'Get Notified' when limit is reached -->
+  <dialog id="notifyModal" class="glass-modal">
+    <div class="modal-content">
+      <h3>Weekly Capacity Reached</h3>
+      <p>To preserve quality, we cap production at 40 orders/week. Enter your email to be notified when slots open next week.</p>
+      <input type="email" id="notifyEmail" placeholder="Your email address" />
+      <div class="modal-actions">
+        <button id="closeNotifyBtn" class="btn btn-subtle">Cancel</button>
+        <button id="submitNotifyBtn" class="btn btn-solid">Notify Me</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Core Scripts -->
+  <script src="/js/main.js"></script>
+  <script src="/js/product.js"></script>
+</body>
+</html>
