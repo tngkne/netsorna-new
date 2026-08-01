@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — Netsorna</title>
+
+  <link rel="canonical" href="https://netsorna.website/checkout.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/shop.css" />
+</head>
+<body>
+
+  <!-- Floating Navigation Bar Header -->
+  <div class="navbar-wrapper">
+    <header class="navbar" id="navbar">
+      <div class="navbar-bar">
+        <button class="menu-btn" aria-label="Toggle Navigation Menu" id="menuToggle">
+          <svg class="icon-hamburger" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="/index.html" class="brand-logo" aria-label="Netsorna Home">
+          <img src="/images/icons/horizontal_logo.svg" alt="Netsorna Logo" class="logo-img" width="160" height="40" onerror="this.outerHTML='<span class=\'logo-text\'>NETSORNA.</span>'" />
+        </a>
+
+        <a href="/cart.html" class="cart-btn" aria-label="View Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </a>
+      </div>
+
+      <nav class="nav-drawer" id="navDrawer" aria-hidden="true">
+        <ul class="nav-links">
+          <li><a href="/index.html">Home</a></li>
+          <li><a href="/shop.html">Shop Artworks</a></li>
+          <li><a href="/blog.html">Blog & Stories</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </nav>
+    </header>
+  </div>
+
+  <main class="product-page-main" style="padding-top: 90px; min-height: 70vh;">
+    <h1 style="font-size: 1.6rem; margin-bottom: 24px;">Complete Your Order</h1>
+
+    <div id="checkoutContainer" class="checkout-grid" style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+      <!-- Dynamic Form Container -->
+      <form id="checkoutForm" onsubmit="submitOrder(event)" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div class="form-section">
+          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Contact Information</h2>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="custName" placeholder="Full Name" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+            <input type="email" id="custEmail" placeholder="Email Address" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+            <input type="tel" id="custPhone" placeholder="Phone Number (WhatsApp preferred)" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Delivery Address (Courier)</h2>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="text" id="streetAddress" placeholder="Street Address" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <input type="text" id="city" placeholder="City" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+              <input type="text" id="postalCode" placeholder="Postal Code" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+            </div>
+            <input type="text" id="province" placeholder="Province / State" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+          </div>
+        </div>
+
+        <!-- Custom Order Specific Requirements Section -->
+        <div id="customNotesSection" style="display: none;" class="form-section">
+          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Custom Piece Instructions</h2>
+          <textarea id="customNotes" rows="3" placeholder="Any additional framing details, tone preferences, or specific delivery requests..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 3px; font-family: inherit;"></textarea>
+        </div>
+
+        <button type="submit" id="payButton" class="btn btn-solid btn-lg" style="width: 100%; margin-top: 12px;">
+          Pay with Yoco
+        </button>
+      </form>
+
+      <!-- Order Summary Column -->
+      <div id="orderSummaryBox" style="background: var(--accent-light); padding: 24px; border-radius: 4px; height: fit-content;">
+        <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 16px;">Order Summary</h2>
+        <div id="summaryItemsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+          <!-- Injected via JS -->
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 12px 0;" />
+        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem;">
+          <span>Total</span>
+          <span id="summaryTotalAmount">R 0</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo">netsorna.</span>
+        <p>Curated fine art, relief sculptures, and custom interior pieces.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Netsorna. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script src="https://js.yoco.com/sdk/v1/yoco-sdk-web.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/checkout.js"></script>
+</body>
+</html>
