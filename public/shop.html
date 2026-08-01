@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Art Catalogue — Netsorna</title>
+
+  <link rel="canonical" href="https://netsorna.website/shop.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/shop.css" />
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <div class="navbar-wrapper">
+    <header class="navbar" id="navbar">
+      <div class="navbar-bar">
+        <button class="menu-btn" aria-label="Toggle Navigation Menu" id="menuToggle">
+          <svg class="icon-hamburger" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="/index.html" class="brand-logo" aria-label="Netsorna Home">
+          <img src="/images/icons/horizontal_logo.svg" alt="Netsorna Logo" class="logo-img" width="160" height="40" onerror="this.outerHTML='<span class=\'logo-text\'>NETSORNA.</span>'" />
+        </a>
+
+        <a href="/cart.html" class="cart-btn" aria-label="View Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </a>
+      </div>
+
+      <nav class="nav-drawer" id="navDrawer" aria-hidden="true">
+        <ul class="nav-links">
+          <li><a href="/index.html">Home</a></li>
+          <li><a href="/shop.html" class="active">Shop Artworks</a></li>
+          <li><a href="/blog.html">Blog & Stories</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </nav>
+    </header>
+  </div>
+
+  <main class="catalogue-main-wrapper">
+    <section class="catalogue-header">
+      <h1>Curated Artworks & Custom Sculptures</h1>
+      <p>Explore handcrafted relief wall art, custom portrait commissions, and large-format statement pieces.</p>
+    </section>
+
+    <!-- Standard & Custom Art Grid -->
+    <section class="shop-grid-section">
+      <h2 class="section-title">Catalogue & Commissions</h2>
+      <div class="product-grid" id="catalogueGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- High-Value WhatsApp Inquiry Section -->
+    <section class="luxury-inquiry-section">
+      <div class="luxury-card">
+        <div class="luxury-content">
+          <span class="badge-gold">Bespoke Interior & Luxury</span>
+          <h2>Grand Statement Relief Panels</h2>
+          <p>Large-format multi-piece acrylic wall art installations over R15,000 are produced exclusively by personal consultation.</p>
+          <button id="luxuryWhatsappBtn" class="btn btn-gold btn-lg" onclick="handleWhatsappInquiry('NET-LUX-001', 'Grand Statement Relief Panel')">
+            Inquire via WhatsApp
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-bottom">
+      <span>&copy; 2026 Netsorna. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/whatsapp.js"></script>
+  <script>
+    // Fetch and render catalogue items
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('catalogueGrid');
+      try {
+        const res = await fetch('/api/products');
+        const products = await res.json();
+
+        grid.innerHTML = products.map(item => `
+          <div class="product-card">
+            <a href="/product.html?sku=${item.sku}">
+              <img src="${item.images[0]}" alt="${item.title}" class="product-card-img" />
+            </a>
+            <div class="product-card-info">
+              <h3><a href="/product.html?sku=${item.sku}">${item.title}</a></h3>
+              <div class="product-card-price">R ${item.price.toLocaleString()}</div>
+              <a href="/product.html?sku=${item.sku}" class="btn btn-outline" style="width: 100%; text-align: center; margin-top: 10px;">
+                ${item.customType && item.customType !== 'none' ? 'Customize & Order' : 'View Details'}
+              </a>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load products:', err);
+      }
+    });
+  </script>
+</body>
+</html>
