@@ -1,6 +1,6 @@
 /**
  * Cloudflare Worker: /api/payment-intent
- * Initializes Yoco Checkout session for South African Rand transactions.
+ * Initializes Yoco Web Checkout session for South African Rand transactions.
  */
 
 export async function onRequestPost(context) {
@@ -21,18 +21,22 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Yoco API Checkout Session Endpoint
-    const yocoResponse = await fetch('https://online.yoco.com/v1/checkout/sessions', {
+    // Fallback secret key (Test environment key) if env.YOCO_SECRET_KEY is not defined in Wrangler/Dashboard
+    const secretKey = env.YOCO_SECRET_KEY || 'sk_test_ad3574baP4560Lq3f0b40ab9d9a7';
+    const origin = new URL(request.url).origin;
+
+    // Yoco Web Checkout Instant Session Endpoint
+    const yocoResponse = await fetch('https://online.yoco.com/v1/checkout/instant', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${env.YOCO_SECRET_KEY}`
+        'Authorization': `Bearer ${secretKey}`
       },
       body: JSON.stringify({
-        amount: amountInCents, // Amount in cents (e.g. R1,999 = 199900)
+        amount: amountInCents, // Amount in cents (e.g., R1,999 = 199900)
         currency: currency,
-        cancelUrl: `https://netsorna.website/checkout.html?orderId=${orderId}&status=cancelled`,
-        successUrl: `https://netsorna.website/success.html?orderId=${orderId}`,
+        cancelUrl: `${origin}/checkout.html?orderId=${orderId}&status=cancelled`,
+        successUrl: `${origin}/success.html?orderId=${orderId}`,
         metadata: {
           orderId: orderId
         }
@@ -42,12 +46,15 @@ export async function onRequestPost(context) {
     const yocoData = await yocoResponse.json();
 
     if (!yocoResponse.ok) {
-      throw new Error(yocoData.errorMessage || 'Yoco session creation failed');
+      throw new Error(yocoData.message || yocoData.errorMessage || 'Yoco session creation failed');
     }
+
+    // Yoco returns redirect URL directly or as .redirectUrl / .url
+    const redirectUrl = yocoData.redirectUrl || yocoData.url;
 
     return new Response(
       JSON.stringify({
-        redirectUrl: yocoData.redirectUrl,
+        redirectUrl: redirectUrl,
         sessionId: yocoData.id
       }),
       { status: 200, headers }
