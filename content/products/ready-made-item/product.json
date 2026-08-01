@@ -1,0 +1,11 @@
+{
+  "id": "ready-made-item",
+  "sku": "NET-FRM-001",
+  "title": "Abstract Geometric Relief Panel",
+  "price": 1999,
+  "customType": "none",
+  "description": "Pre-crafted and ready for immediate courier dispatch across South Africa.",
+  "images": [
+    "/images/products/ready-main.jpg"
+  ]
+}
