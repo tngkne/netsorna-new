@@ -1,0 +1,228 @@
+/* Product Page & Interactive Styling */
+.product-page-main {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 84px 16px 40px;
+}
+
+.product-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+/* SKELETON LOADERS */
+.product-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background-color: var(--placeholder-color);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-text {
+  height: 200px;
+  background-color: var(--placeholder-color);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+/* PRODUCT MEDIA GALLERY */
+.product-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.main-image-wrapper {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: var(--placeholder-color);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.main-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.thumb-img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.thumb-img.active, .thumb-img:hover {
+  border-color: var(--border-color);
+}
+
+/* PRODUCT DETAILS & BUY BOX */
+.product-details-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.product-header-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.product-price-tag {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.product-description {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* CUSTOM FILE UPLOAD DROPZONE */
+.upload-zone {
+  border: 2px dashed var(--border-color);
+  background: var(--accent-light);
+  padding: 20px;
+  border-radius: 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.upload-zone:hover {
+  background: #ebe7df;
+}
+
+.upload-icon {
+  width: 32px;
+  height: 32px;
+  stroke: var(--text-dark);
+}
+
+.upload-zone p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.upload-zone strong {
+  color: var(--text-dark);
+}
+
+.file-preview-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: #cc0000;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* QUANTITY & ACTIONS */
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  width: fit-content;
+  border-radius: 3px;
+}
+
+.qty-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.qty-input {
+  width: 44px;
+  text-align: center;
+  border: none;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  height: 36px;
+}
+
+/* CHECKBOX & MODAL COMPONENT */
+.checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.checkbox-container input {
+  margin-top: 2px;
+}
+
+.agreement-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.agreement-text ul {
+  padding-left: 18px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .product-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+}
