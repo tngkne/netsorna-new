@@ -38,7 +38,7 @@
 
 .skeleton-image {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1/1;
   background-color: var(--placeholder-color);
   border-radius: 4px;
   animation: pulse 1.5s infinite ease-in-out;
@@ -66,7 +66,7 @@
 
 .main-image-wrapper {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1/1;
   background: var(--placeholder-color);
   border: 1px solid var(--border-color);
   border-radius: 3px;
@@ -107,8 +107,8 @@
 .thumb-img {
   scroll-snap-align: start;
   flex-shrink: 0;
-  width: 60px;
-  aspect-ratio: 3 / 4;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
   border: 1px solid #ddd;
   border-radius: 2px;
@@ -432,7 +432,7 @@
 }
 
 /* ==========================================
-   FULL-BLEED ARTWORK DISPLAY (3:4 VERTICAL)
+   FULL-BLEED ARTWORK DISPLAY & PAGINATION OVERLAYS
    ========================================== */
 
 .full-bleed-main {
@@ -460,9 +460,8 @@
 .full-bleed-main .main-image-wrapper {
   position: relative;
   width: 100vw;
-  aspect-ratio: 3 / 4;
-  height: auto;
-  max-height: 80vh;
+  height: 75vh;
+  min-height: 480px;
   background-color: var(--placeholder-color);
   border: none;
   border-radius: 0;
@@ -506,9 +505,8 @@
 }
 
 .full-bleed-main .thumb-img {
-  width: 50px;
-  aspect-ratio: 3 / 4;
-  height: auto;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   cursor: pointer;
   opacity: 0.6;
@@ -548,7 +546,8 @@
   }
 
   .thumb-img {
-    width: 48px;
+    width: 56px;
+    height: 56px;
   }
 }
 
@@ -607,8 +606,6 @@
 
   .full-bleed-main .main-image-wrapper {
     width: 100%;
-    aspect-ratio: 3 / 4;
-    height: auto;
-    max-height: none;
+    height: 85vh;
   }
 }
