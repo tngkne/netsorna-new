@@ -15,31 +15,39 @@ const LIMITS = {
 const PRODUCTS_REGISTRY = [
   {
     sku: 'NET-FRM-001',
+    id: 'ready-made-item',
+    slug: 'ready-made-item',
     title: 'FROME ART',
     price: 1999,
     type: 'ready-made',
-    image: '/images/products/product1.jpg'
+    image: '/content/products/ready-made-item/main.jpg'
   },
   {
     sku: 'NET-MNR-002',
+    id: 'mono-relief',
+    slug: 'mono-relief',
     title: 'MONO RELIEF',
     price: 2499,
     type: 'ready-made',
-    image: '/images/products/product3.jpg'
+    image: '/content/products/mono-relief/hero.jpg'
   },
   {
-    sku: 'NET-CUST-FACE-01',
-    title: 'PORTRAIT RELIEF (1-5 FACES)',
+    sku: 'NET-CUST-PORTRAIT',
+    id: 'custom-portrait',
+    slug: 'custom-portrait',
+    title: 'PORTRAIT RELIEF (1–5 FACES)',
     price: 4500,
-    type: 'custom-1', // Faces / Animals
-    image: '/images/products/product2.jpg'
+    type: 'custom-1', // Faces / Artworks
+    image: '/content/products/custom-portrait/hero.jpg'
   },
   {
     sku: 'NET-LUX-001',
+    id: 'luxury-art-piece',
+    slug: 'luxury-art-piece',
     title: 'HERITAGE GRAND SCULPTURE',
     price: 18500, // Triggers WhatsApp (R15,000+)
     type: 'high-value',
-    image: '/images/products/product4.jpg'
+    image: '/content/products/luxury-art-piece/main.jpg'
   }
 ];
 
@@ -115,10 +123,21 @@ async function renderCatalog() {
       actionBtnHtml = `<a href="/product.html?sku=${product.sku}" class="btn btn-outline">Get One</a>`;
     }
 
+    // Determine target thumbnail file location
+    const imagePath = product.image || `/content/products/${product.slug || product.id}/hero.jpg`;
+
     return `
       <article class="product-card" data-sku="${product.sku}">
         <div class="product-image-container">
-          <img src="${product.image}" alt="${product.title}" class="product-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'placeholder-box\\'>${product.title}</div>';">
+          <!-- Thumbnail linked directly to directory image file -->
+          <a href="${imagePath}" target="_blank" class="product-thumb-link" title="View Full Artwork File">
+            <img 
+              src="${imagePath}" 
+              alt="${product.title}" 
+              class="product-img" 
+              onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'placeholder-box\\'>${product.title}</div>';"
+            />
+          </a>
         </div>
         <div class="product-info">
           <div class="product-meta">
