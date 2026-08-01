@@ -137,22 +137,13 @@ async function renderCatalog() {
   attachNotifyListeners();
 }
 
-// --- 4. GLASS NAVBAR, DRAWER LOGIC & DYNAMIC TOP PADDING ---
+// --- 4. GLASS NAVBAR & DRAWER LOGIC ---
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   const menuToggle = document.getElementById('menuToggle');
   const navDrawer = document.getElementById('navDrawer');
 
   if (!navbar) return;
-
-  // Dynamically set padding-top on body/wrapper to eliminate header overlap
-  const adjustHeaderSpacing = () => {
-    const navHeight = navbar.offsetHeight || 70;
-    document.documentElement.style.setProperty('--nav-height', `${navHeight + 20}px`);
-  };
-
-  adjustHeaderSpacing();
-  window.addEventListener('resize', adjustHeaderSpacing, { passive: true });
 
   window.addEventListener('scroll', () => {
     if (window.scrollY > 10) navbar.classList.add('scrolled');
