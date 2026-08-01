@@ -6,7 +6,7 @@
   "customType": "custom-1",
   "description": "A bespoke multi-layered acrylic and high-density relief art piece sculpted from your personal photographs.",
   "images": [
-    "/images/products/portrait-hero.jpg",
-    "/images/products/portrait-detail-1.jpg"
+    "/content/products/custom-portrait/hero.jpg",
+    "/content/products/custom-portrait/detail-1.jpg"
   ]
 }
