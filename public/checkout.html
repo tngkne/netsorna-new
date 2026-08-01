@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>Checkout — Netsorna</title>
 
   <link rel="canonical" href="https://netsorna.website/checkout.html" />
@@ -55,57 +55,57 @@
     </header>
   </div>
 
-  <main class="product-page-main" style="padding-top: 90px; min-height: 70vh;">
-    <h1 style="font-size: 1.6rem; margin-bottom: 24px;">Complete Your Order</h1>
+  <main class="checkout-main-wrapper">
+    <h1 class="checkout-title">Complete Your Order</h1>
 
-    <div id="checkoutContainer" class="checkout-grid" style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+    <div id="checkoutContainer" class="checkout-grid">
       <!-- Dynamic Form Container -->
-      <form id="checkoutForm" onsubmit="submitOrder(event)" style="display: flex; flex-direction: column; gap: 20px;">
+      <form id="checkoutForm" class="checkout-form" onsubmit="submitOrder(event)">
         
         <div class="form-section">
-          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Contact Information</h2>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="text" id="custName" placeholder="Full Name" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
-            <input type="email" id="custEmail" placeholder="Email Address" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
-            <input type="tel" id="custPhone" placeholder="Phone Number (WhatsApp preferred)" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+          <h2>Contact Information</h2>
+          <div class="form-fields-stack">
+            <input type="text" id="custName" placeholder="Full Name" required />
+            <input type="email" id="custEmail" placeholder="Email Address" required />
+            <input type="tel" id="custPhone" placeholder="Phone Number (WhatsApp preferred)" required />
           </div>
         </div>
 
         <div class="form-section">
-          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Delivery Address (Courier)</h2>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="text" id="streetAddress" placeholder="Street Address" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <input type="text" id="city" placeholder="City" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
-              <input type="text" id="postalCode" placeholder="Postal Code" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+          <h2>Delivery Address (Courier)</h2>
+          <div class="form-fields-stack">
+            <input type="text" id="streetAddress" placeholder="Street Address" required />
+            <div class="form-row-split">
+              <input type="text" id="city" placeholder="City" required />
+              <input type="text" id="postalCode" placeholder="Postal Code" required />
             </div>
-            <input type="text" id="province" placeholder="Province / State" required style="padding: 12px; border: 1px solid var(--border-color); border-radius: 3px;" />
+            <input type="text" id="province" placeholder="Province / State" required />
           </div>
         </div>
 
         <!-- Custom Order Specific Requirements Section -->
-        <div id="customNotesSection" style="display: none;" class="form-section">
-          <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Custom Piece Instructions</h2>
-          <textarea id="customNotes" rows="3" placeholder="Any additional framing details, tone preferences, or specific delivery requests..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 3px; font-family: inherit;"></textarea>
+        <div id="customNotesSection" class="form-section" style="display: none;">
+          <h2>Custom Piece Instructions</h2>
+          <textarea id="customNotes" rows="3" placeholder="Any additional framing details, tone preferences, or specific delivery requests..."></textarea>
         </div>
 
-        <button type="submit" id="payButton" class="btn btn-solid btn-lg" style="width: 100%; margin-top: 12px;">
+        <button type="submit" id="payButton" class="btn btn-solid btn-lg checkout-pay-btn">
           Pay with Yoco
         </button>
       </form>
 
       <!-- Order Summary Column -->
-      <div id="orderSummaryBox" style="background: var(--accent-light); padding: 24px; border-radius: 4px; height: fit-content;">
-        <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 16px;">Order Summary</h2>
-        <div id="summaryItemsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+      <aside id="orderSummaryBox" class="checkout-summary-box">
+        <h2>Order Summary</h2>
+        <div id="summaryItemsList" class="summary-items-list">
           <!-- Injected via JS -->
         </div>
-        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 12px 0;" />
-        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem;">
+        <div class="summary-divider"></div>
+        <div class="summary-total-row">
           <span>Total</span>
           <span id="summaryTotalAmount">R 0</span>
         </div>
-      </div>
+      </aside>
     </div>
   </main>
 
