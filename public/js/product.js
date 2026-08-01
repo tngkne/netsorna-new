@@ -6,6 +6,7 @@
 let currentProduct = null;
 let uploadedFileKey = null;
 let termsAccepted = false;
+let currentImageIndex = 0;
 
 // 1. Extract SKU from URL query parameter
 function getSkuFromUrl() {
@@ -47,11 +48,16 @@ function renderProductUI() {
     <div class="product-gallery">
       <div class="main-image-wrapper">
         <img id="mainProductImage" src="${currentProduct.images[0]}" alt="${currentProduct.title}" />
+        ${currentProduct.images.length > 1 ? `
+          <div class="image-counter-badge" id="imageCounter">
+            1 / ${currentProduct.images.length}
+          </div>
+        ` : ''}
       </div>
       ${currentProduct.images.length > 1 ? `
         <div class="thumbnail-row">
           ${currentProduct.images.map((img, idx) => `
-            <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)" alt="Thumbnail ${idx + 1}" />
+            <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" onclick="switchImage('${img}', this, ${idx})" alt="Thumbnail ${idx + 1}" />
           `).join('')}
         </div>
       ` : ''}
@@ -110,9 +116,16 @@ function renderProductUI() {
 }
 
 // 4. Image Gallery Switcher
-function switchImage(src, element) {
+function switchImage(src, element, index) {
   const mainImg = document.getElementById('mainProductImage');
   if (mainImg) mainImg.src = src;
+  
+  currentImageIndex = index;
+  const counter = document.getElementById('imageCounter');
+  if (counter && currentProduct) {
+    counter.textContent = `${index + 1} / ${currentProduct.images.length}`;
+  }
+
   document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
   element.classList.add('active');
 }
