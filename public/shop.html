@@ -64,9 +64,8 @@
     <!-- Standard & Custom Art Grid -->
     <section class="shop-grid-section">
       <h2 class="section-title">Catalogue & Commissions</h2>
-      <!-- Standardized ID target to match main.js -->
-      <div class="product-grid" id="productGrid">
-        <!-- Rendered dynamically by main.js -->
+      <div class="product-grid" id="catalogueGrid">
+        <!-- Rendered dynamically -->
       </div>
     </section>
 
@@ -79,9 +78,9 @@
           <span class="badge-gold">Bespoke Interior & Luxury</span>
           <h2>Grand Statement Relief Panels</h2>
           <p>Large-format multi-piece acrylic wall art installations over R15,000 are produced exclusively by personal consultation.</p>
-          <a href="/whatsapp-inquiry.html?sku=NET-LUX-001" id="luxuryWhatsappBtn" class="btn btn-gold btn-lg">
+          <button id="luxuryWhatsappBtn" class="btn btn-gold btn-lg" onclick="handleWhatsappInquiry('NET-LUX-001', 'Grand Statement Relief Panel')">
             Inquire via WhatsApp
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -93,8 +92,45 @@
     </div>
   </footer>
 
-  <!-- Centralized JS dependencies -->
   <script src="/js/main.js"></script>
   <script src="/js/whatsapp.js"></script>
+  <script>
+    // Dynamic product fetch supporting both item.images array and single item.image strings
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('catalogueGrid') || document.getElementById('productGrid');
+      if (!grid) return;
+
+      try {
+        const res = await fetch('/api/products');
+        const products = await res.json();
+
+        grid.innerHTML = products.map(item => {
+          const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : (item.image || '/images/placeholder.jpg');
+          const buttonLabel = (item.customType && item.customType !== 'none') ? 'Customize & Order' : 'View Details';
+
+          return `
+            <div class="product-card">
+              <a href="/product.html?sku=${item.sku}" class="product-image-container">
+                <img src="${imgSrc}" alt="${item.title}" class="product-img" onerror="this.src='/images/placeholder.jpg'" />
+              </a>
+              <div class="product-info">
+                <div class="product-meta">
+                  <h3 class="product-title"><a href="/product.html?sku=${item.sku}">${item.title}</a></h3>
+                  <div class="price">R ${Number(item.price).toLocaleString()}</div>
+                </div>
+                <div class="product-actions">
+                  <a href="/product.html?sku=${item.sku}" class="btn btn-outline">
+                    ${buttonLabel}
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load products:', err);
+      }
+    });
+  </script>
 </body>
 </html>
