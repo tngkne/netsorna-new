@@ -1,0 +1,11 @@
+{
+  "id": "custom-object",
+  "sku": "NET-CUST-OBJECT",
+  "title": "Custom Object / Architectural Sculpt",
+  "price": 5200,
+  "customType": "custom-2",
+  "description": "Custom dimensional artwork focusing on structural objects, animals, places, or vintage vehicles.",
+  "images": [
+    "/images/products/object-hero.jpg"
+  ]
+}
