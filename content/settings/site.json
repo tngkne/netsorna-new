@@ -1,0 +1,19 @@
+{
+  "storeName": "Netsorna",
+  "tagline": "Bespoke Acrylic UV Prints, Fine Art & Sculptures",
+  "domain": "netsorna.website",
+  "contactEmail": "info@netsorna.website",
+  "currency": {
+    "code": "ZAR",
+    "symbol": "R"
+  },
+  "shipping": {
+    "provider": "Nationwide Courier",
+    "region": "South Africa",
+    "flatRate": 0
+  },
+  "social": {
+    "instagram": "@netsorna",
+    "whatsappNumber": "27723578960"
+  }
+}
