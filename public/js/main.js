@@ -1,6 +1,6 @@
 /**
  * Netsorna Store Engine
- * Handles decoupled content, custom item rules, high-value routing, and weekly throttles.
+ * Handles decoupled content, custom item rules, high-value routing, header dynamic padding, and weekly throttles.
  */
 
 // Global thresholds & states
@@ -11,7 +11,7 @@ const LIMITS = {
   emailThreshold: 25000
 };
 
-// Mock product registry mirroring static JSON content files
+// Fallback catalog mirroring static JSON content files
 const PRODUCTS_REGISTRY = [
   {
     sku: 'NET-FRM-001',
@@ -45,22 +45,30 @@ const PRODUCTS_REGISTRY = [
 
 // --- 1. LOCAL STORAGE CART MANAGEMENT ---
 function getCart() {
-  const cart = localStorage.getItem('netsorna_cart');
-  return cart ? JSON.parse(cart) : [];
+  try {
+    const cart = localStorage.getItem('netsorna_cart');
+    return cart ? JSON.parse(cart) : [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function saveCart(cart) {
-  localStorage.setItem('netsorna_cart', JSON.stringify(cart));
+  try {
+    localStorage.setItem('netsorna_cart', JSON.stringify(cart));
+  } catch (e) {
+    console.error('Failed to save cart to localStorage', e);
+  }
   updateCartBadge();
 }
 
 function updateCartBadge() {
   const cart = getCart();
-  const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const total = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const badges = document.querySelectorAll('.cart-badge, #cartBadge');
   badges.forEach(b => {
     b.textContent = total;
-    b.style.display = total > 0 ? 'flex' : 'none';
+    b.style.display = total > 0 ? 'inline-flex' : 'none';
   });
 }
 
@@ -68,10 +76,10 @@ function updateCartBadge() {
 async function fetchStoreStatus() {
   try {
     const res = await fetch('/api/status');
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('Status endpoint unavailable');
     return await res.json();
   } catch (err) {
-    // Fallback safe state
+    // Safe default operational state
     return {
       ordersThisWeek: 0,
       whatsAppThisWeek: 0,
@@ -90,11 +98,11 @@ async function renderCatalog() {
   const isCapped = status.ordersThisWeek >= LIMITS.maxWeeklyOrders || status.globalCapReached;
 
   grid.innerHTML = PRODUCTS_REGISTRY.map(product => {
-    const isProductDisabled = status.disabledSkus.includes(product.sku);
+    const isProductDisabled = status.disabledSkus && status.disabledSkus.includes(product.sku);
     let actionBtnHtml = '';
 
     if (isCapped || isProductDisabled) {
-      actionBtnHtml = `<button class="btn btn-disabled notify-trigger" data-sku="${product.sku}">Get Notified</button>`;
+      actionBtnHtml = `<button type="button" class="btn btn-disabled notify-trigger" data-sku="${product.sku}">Get Notified</button>`;
     } else if (product.price >= LIMITS.emailThreshold) {
       actionBtnHtml = `<a href="mailto:quotes@netsorna.website?subject=Quote%20Request%20${product.sku}" class="btn btn-outline">Request Quote</a>`;
     } else if (product.price >= LIMITS.whatsappThreshold) {
@@ -110,13 +118,13 @@ async function renderCatalog() {
     return `
       <article class="product-card" data-sku="${product.sku}">
         <div class="product-image-container">
-          <img src="${product.image}" alt="${product.title}" class="product-img" onerror="this.outerHTML='<div class=\\'placeholder-box\\'></div>'">
+          <img src="${product.image}" alt="${product.title}" class="product-img" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'placeholder-box\\'>${product.title}</div>';">
         </div>
         <div class="product-info">
           <div class="product-meta">
             <h3 class="product-title">${product.title}</h3>
             <span class="price">R ${product.price.toLocaleString()}</span>
-            ${product.type.startsWith('custom') ? '<span class="product-badge">Custom Upload</span>' : ''}
+            ${product.type && product.type.startsWith('custom') ? '<span class="product-badge">Custom Upload</span>' : ''}
           </div>
           <div class="product-actions">
             ${actionBtnHtml}
@@ -129,41 +137,53 @@ async function renderCatalog() {
   attachNotifyListeners();
 }
 
-// --- 4. GLASS NAVBAR & DRAWER LOGIC ---
+// --- 4. GLASS NAVBAR, DRAWER LOGIC & DYNAMIC TOP PADDING ---
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   const menuToggle = document.getElementById('menuToggle');
   const navDrawer = document.getElementById('navDrawer');
 
-  if (!menuToggle || !navbar || !navDrawer) return;
+  if (!navbar) return;
+
+  // Dynamically set padding-top on body/wrapper to eliminate header overlap
+  const adjustHeaderSpacing = () => {
+    const navHeight = navbar.offsetHeight || 70;
+    document.documentElement.style.setProperty('--nav-height', `${navHeight + 20}px`);
+  };
+
+  adjustHeaderSpacing();
+  window.addEventListener('resize', adjustHeaderSpacing, { passive: true });
 
   window.addEventListener('scroll', () => {
-    if (window.scrollY > 0) navbar.classList.add('scrolled');
+    if (window.scrollY > 10) navbar.classList.add('scrolled');
     else navbar.classList.remove('scrolled');
   }, { passive: true });
 
-  const closeDrawer = () => {
-    navbar.classList.remove('expanded');
-    menuToggle.classList.remove('active');
-    document.body.classList.remove('menu-open');
-  };
+  if (menuToggle && navDrawer) {
+    const closeDrawer = () => {
+      navbar.classList.remove('expanded');
+      menuToggle.classList.remove('active');
+      document.body.classList.remove('menu-open');
+    };
 
-  menuToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isExpanded = navbar.classList.contains('expanded');
-    if (isExpanded) closeDrawer();
-    else {
-      navbar.classList.add('expanded');
-      menuToggle.classList.add('active');
-      document.body.classList.add('menu-open');
-    }
-  });
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isExpanded = navbar.classList.contains('expanded');
+      if (isExpanded) {
+        closeDrawer();
+      } else {
+        navbar.classList.add('expanded');
+        menuToggle.classList.add('active');
+        document.body.classList.add('menu-open');
+      }
+    });
 
-  document.addEventListener('click', (e) => {
-    if (navbar.classList.contains('expanded') && !navbar.contains(e.target)) {
-      closeDrawer();
-    }
-  });
+    document.addEventListener('click', (e) => {
+      if (navbar.classList.contains('expanded') && !navbar.contains(e.target)) {
+        closeDrawer();
+      }
+    });
+  }
 }
 
 // --- 5. CAPACITY CAP MODAL HANDLING ---
@@ -176,20 +196,32 @@ function attachNotifyListeners() {
   if (!modal) return;
 
   triggers.forEach(btn => {
-    btn.addEventListener('click', () => modal.showModal());
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      modal.showModal();
+    });
   });
 
   if (closeBtn) closeBtn.addEventListener('click', () => modal.close());
   if (submitBtn) {
     submitBtn.addEventListener('click', async () => {
-      const email = document.getElementById('notifyEmail').value;
-      if (email) {
-        await fetch('/api/notify-me', {
-          method: 'POST',
-          body: JSON.stringify({ email })
-        });
-        showToast('You will be notified when weekly capacity resets.');
-        modal.close();
+      const emailInput = document.getElementById('notifyEmail');
+      const email = emailInput ? emailInput.value.trim() : '';
+      if (email && email.includes('@')) {
+        try {
+          await fetch('/api/notify-me', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+          showToast('You will be notified when weekly capacity resets.');
+          emailInput.value = '';
+          modal.close();
+        } catch (err) {
+          showToast('Failed to subscribe. Please try again.');
+        }
+      } else {
+        showToast('Please enter a valid email address.');
       }
     });
   }
@@ -205,10 +237,10 @@ function showToast(message) {
   }
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+  setTimeout(() => toast.classList.remove('show'), 3200);
 }
 
-// Init Application
+// Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   updateCartBadge();
