@@ -1,4 +1,7 @@
-/* Product Page & Interactive Styling */
+/* ==========================================
+   PRODUCT PAGE & INTERACTIVE STYLING
+   ========================================== */
+
 .product-page-main {
   width: 100%;
   max-width: 1140px;
@@ -68,9 +71,13 @@
   gap: 10px;
   overflow-x: auto;
   padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .thumb-img {
+  scroll-snap-align: start;
+  flex-shrink: 0;
   width: 64px;
   height: 64px;
   object-fit: cover;
@@ -92,13 +99,13 @@
 }
 
 .product-header-title {
-  font-size: 1.8rem;
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
   font-weight: 700;
   line-height: 1.2;
 }
 
 .product-price-tag {
-  font-size: 1.2rem;
+  font-size: clamp(1.1rem, 3vw, 1.2rem);
   font-weight: 600;
   color: var(--text-dark);
 }
@@ -191,7 +198,7 @@
   height: 36px;
 }
 
-/* CHECKBOX & MODAL COMPONENT */
+/* CHECKBOX & AGREEMENTS */
 .checkbox-container {
   display: flex;
   align-items: flex-start;
@@ -220,9 +227,211 @@
   gap: 6px;
 }
 
+/* MODAL COMPONENTS */
+.glass-modal {
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 520px;
+  width: calc(100% - 32px);
+  margin: auto;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.glass-modal::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  padding: clamp(16px, 5vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  text-align: center;
+}
+
+/* ==========================================
+   CHECKOUT RESPONSIVE & LAYOUT OPTIMIZATIONS
+   ========================================== */
+
+.checkout-main-wrapper {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 86px 16px 40px;
+  min-height: 75vh;
+}
+
+.checkout-title {
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.form-fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.form-fields-stack input,
+.form-section textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.form-row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.checkout-pay-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+/* ORDER SUMMARY CARD */
+.checkout-summary-box {
+  background: var(--accent-light);
+  padding: clamp(16px, 4vw, 24px);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.checkout-summary-box h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.summary-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-divider {
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  margin: 16px 0;
+}
+
+.summary-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* ==========================================
+   BREAKPOINTS & RESPONSIVE ADAPTATIONS
+   ========================================== */
+
+/* 📱 Mobile Devices (<= 480px) */
+@media (max-width: 480px) {
+  .form-row-split {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-main-wrapper {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .thumb-img {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* 💻 Tablet & Desktop Layouts */
+@media (min-width: 480px) {
+  .modal-actions .btn {
+    flex: initial;
+  }
+}
+
 @media (min-width: 768px) {
   .product-container {
     grid-template-columns: 1fr 1fr;
     gap: 48px;
+  }
+}
+
+@media (min-width: 860px) {
+  .checkout-grid {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .checkout-summary-box {
+    position: sticky;
+    top: 90px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .product-container {
+    grid-template-columns: 55% 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .product-details-box {
+    position: sticky;
+    top: 90px;
   }
 }
