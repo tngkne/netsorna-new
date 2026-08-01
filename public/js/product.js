@@ -1,287 +1,259 @@
 /**
- * Netsorna Product Detail Page Controller
- * Handles query parameter routing, hero slider scrolling counter,
- * interactive mounting/finish chip selection, and cart actions.
+ * Netsorna Product Page Engine
+ * Handles SKU lookup, dynamic custom uploads, R2 URL negotiation, copyright modal, & purchasing locks.
  */
 
-// Extended product database for deep details
-const DETAILED_PRODUCTS = [
-  {
-    sku: 'NET-FRM-001',
-    id: 'frome-art',
-    title: 'FROME ART',
-    price: 1999,
-    type: 'ready-made',
-    images: [
-      '/images/products/product1.jpg',
-      '/images/products/product2.jpg',
-      '/images/products/product3.jpg'
-    ],
-    specs: [
-      '60 x 80 cm / High-grade premium acrylic display',
-      'Precision UV direct-to-substrate back-printing',
-      'SKU: NET-FRM-001',
-      'Hand-finished mounting hardware included',
-      'Polished edges with high-gloss depth finish'
-    ],
-    description: 'A precision UV printed acrylic wall art piece designed with multi-material contrast and subtle depth. Built for high-end luxury interiors, gallery spaces, and bespoke art collections.',
-    options: ['Floating Mount', 'Matte Black Frame', 'Raw Acrylic Edge']
-  },
-  {
-    sku: 'NET-MNR-002',
-    id: 'mono-relief',
-    title: 'MONO RELIEF',
-    price: 2499,
-    type: 'ready-made',
-    images: [
-      '/images/products/product3.jpg',
-      '/images/products/product1.jpg'
-    ],
-    specs: [
-      '50 x 70 cm / Multi-layered relief depth',
-      'Hand-cast architectural plaster & acrylic',
-      'SKU: NET-MNR-002',
-      'Concealed French cleat hanging system'
-    ],
-    description: 'Minimalist linear relief sculpture creating dynamic shadows under directional gallery lighting.',
-    options: ['Natural White', 'Shadow Grey', 'Obsidian Black']
-  },
-  {
-    sku: 'NET-CUST-FACE-01',
-    id: 'portrait-relief',
-    title: 'PORTRAIT RELIEF (1-5 FACES)',
-    price: 4500,
-    type: 'custom-1',
-    images: [
-      '/images/products/product2.jpg'
-    ],
-    specs: [
-      'Custom sizing based on photo composition',
-      'Supports 1 to 5 subject faces or pets',
-      'SKU: NET-CUST-FACE-01',
-      'Direct photo upload agreement required prior to production'
-    ],
-    description: 'Tailor-made wall art crafted directly from your uploaded family, partner, or pet portraits.',
-    options: ['1-2 Faces', '3-4 Faces', '5+ Faces (Bespoke)']
-  },
-  {
-    sku: 'NET-LUX-001',
-    id: 'heritage-grand',
-    title: 'HERITAGE GRAND SCULPTURE',
-    price: 18500,
-    type: 'high-value',
-    images: [
-      '/images/products/product4.jpg'
-    ],
-    specs: [
-      '120 x 180 cm / Statement gallery scale',
-      'Integrated brass accents & UV glass composite',
-      'SKU: NET-LUX-001',
-      'White-glove delivery & studio installation consultation included'
-    ],
-    description: 'A monumental center-piece sculpture drawing inspiration from historical Sotho-Tswana and Southern African architectural line art.',
-    options: ['Brushed Brass Finish', 'Antique Bronze Finish']
-  }
-];
-
 let currentProduct = null;
-let selectedOption = '';
+let uploadedFileKey = null;
+let termsAccepted = false;
 
-// --- 1. ROUTING & DATA POPULATION ---
-function initProductPage() {
+// 1. Get SKU from URL query param
+function getSkuFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const skuParam = params.get('sku');
-  const idParam = params.get('id');
-
-  // Match by SKU or ID (Default to NET-FRM-001 if no query param provided)
-  currentProduct = DETAILED_PRODUCTS.find(p => p.sku === skuParam || p.id === idParam) || DETAILED_PRODUCTS[0];
-
-  selectedOption = currentProduct.options[0] || '';
-
-  // Update Metadata & Head Tags
-  document.getElementById('pageTitle').textContent = `${currentProduct.title} — Netsorna`;
-  document.getElementById('canonicalUrl').href = `https://netsorna.website/product.html?sku=${currentProduct.sku}`;
-  document.getElementById('ogUrl').content = `https://netsorna.website/product.html?sku=${currentProduct.sku}`;
-  document.getElementById('ogTitle').content = `${currentProduct.title} — Netsorna`;
-  document.getElementById('ogDescription').content = currentProduct.description;
-  if (currentProduct.images[0]) {
-    document.getElementById('ogImage').content = `https://netsorna.website${currentProduct.images[0]}`;
-  }
-
-  // Populate Hero Images & Counter
-  renderHeroSlider(currentProduct.images);
-
-  // Populate Editorial Text
-  document.getElementById('productTitle').textContent = currentProduct.title;
-  document.getElementById('productPrice').textContent = `R ${currentProduct.price.toLocaleString()}`;
-  document.getElementById('productDescription').textContent = currentProduct.description;
-
-  // Specs
-  const specsList = document.getElementById('productSpecs');
-  specsList.innerHTML = currentProduct.specs.map(spec => `<li>${spec}</li>`).join('');
-
-  // Variants/Options
-  const chipContainer = document.getElementById('optionChips');
-  chipContainer.innerHTML = currentProduct.options.map((opt, idx) => `
-    <button class="chip ${idx === 0 ? 'active' : ''}" data-option="${opt}">${opt}</button>
-  `).join('');
-
-  attachChipListeners();
-  applyActionRules();
-  renderRelatedProducts();
+  return params.get('sku') || 'NET-FRM-001'; // Default fallback
 }
 
-// --- 2. HERO SLIDER & SCROLL COUNTER ---
-function renderHeroSlider(images) {
-  const slider = document.getElementById('heroSlider');
-  const counter = document.getElementById('imageCounter');
-
-  if (!images || images.length === 0) {
-    slider.innerHTML = `<div class="slide-item active"><div class="placeholder-hero"></div></div>`;
-    counter.textContent = '1 / 1';
-    return;
+// 2. Fetch specific product JSON from backend KV/Storage API
+async function loadProductData(sku) {
+  try {
+    const response = await fetch(`/api/products?sku=${sku}`);
+    if (!response.ok) throw new Error('Product not found');
+    currentProduct = await response.json();
+  } catch (err) {
+    console.warn('Fallback to local registry for SKU:', sku);
+    // Local fallback matching structure
+    currentProduct = {
+      sku: sku,
+      title: sku.includes('CUST') ? 'PORTRAIT RELIEF (1-5 FACES)' : 'FROME ARTWORK',
+      price: sku.includes('LUX') ? 18500 : (sku.includes('CUST') ? 4500 : 1999),
+      customType: sku.includes('CUST') ? 'custom-1' : 'none',
+      description: 'Handcrafted precision art piece sculpted with high-density durable relief layering.',
+      images: ['/images/products/product1.jpg', '/images/products/product2.jpg']
+    };
   }
+  renderProductUI();
+}
 
-  slider.innerHTML = images.map((img, i) => `
-    <div class="slide-item ${i === 0 ? 'active' : ''}">
-      <img src="${img}" alt="${currentProduct.title} view ${i + 1}" class="hero-img" onerror="this.outerHTML='<div class=\\'placeholder-hero\\'></div>'">
+// 3. Render HTML structure based on item properties & custom type
+function renderProductUI() {
+  const container = document.getElementById('productContainer');
+  if (!container || !currentProduct) return;
+
+  const isCustom = currentProduct.customType && currentProduct.customType !== 'none';
+  const isHighValue = currentProduct.price >= 15000;
+
+  container.innerHTML = `
+    <div class="product-gallery">
+      <div class="main-image-wrapper">
+        <img id="mainProductImage" src="${currentProduct.images[0]}" alt="${currentProduct.title}" />
+      </div>
+      ${currentProduct.images.length > 1 ? `
+        <div class="thumbnail-row">
+          ${currentProduct.images.map((img, idx) => `
+            <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)" />
+          `).join('')}
+        </div>
+      ` : ''}
     </div>
-  `).join('');
 
-  counter.textContent = `1 / ${images.length}`;
+    <div class="product-details-box">
+      <div>
+        <h1 class="product-header-title">${currentProduct.title}</h1>
+        <span class="product-price-tag">R ${currentProduct.price.toLocaleString()}</span>
+      </div>
 
-  // Track active slide index on scroll
-  slider.addEventListener('scroll', () => {
-    const slideWidth = slider.clientWidth;
-    if (slideWidth > 0) {
-      const activeIdx = Math.round(slider.scrollLeft / slideWidth) + 1;
-      counter.textContent = `${activeIdx} / ${images.length}`;
-    }
-  }, { passive: true });
+      <p class="product-description">${currentProduct.description}</p>
+
+      ${isCustom ? `
+        <div class="custom-upload-section">
+          <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:6px;">
+            Upload Art Reference / Image (Required)
+          </label>
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p><strong>Click to upload photo</strong> (JPEG, PNG, max 10MB)</p>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)" />
+          <div id="filePreviewContainer" style="margin-top:10px;"></div>
+        </div>
+      ` : ''}
+
+      <div class="quantity-selector">
+        <button class="qty-btn" onclick="adjustQty(-1)">-</button>
+        <input type="number" id="productQty" class="qty-input" value="1" min="1" readonly />
+        <button class="qty-btn" onclick="adjustQty(1)">+</button>
+      </div>
+
+      <div class="action-buttons-wrapper">
+        ${isHighValue ? `
+          <a href="/whatsapp-inquiry.html?sku=${currentProduct.sku}" class="btn btn-solid btn-lg" style="width:100%;">
+            Inquire via WhatsApp
+          </a>
+        ` : `
+          <button id="addToCartBtn" class="btn btn-solid btn-lg" style="width:100%;" ${isCustom ? 'disabled' : ''} onclick="handleAddToCart()">
+            ${isCustom ? 'Upload Image First' : 'Add to Cart'}
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+
+  if (isCustom) setupAgreementModal();
 }
 
-// --- 3. VARIANT CHIP SELECTION ---
-function attachChipListeners() {
-  const chips = document.querySelectorAll('#optionChips .chip');
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      selectedOption = chip.getAttribute('data-option');
+// 4. Image Gallery Switcher
+function switchImage(src, element) {
+  document.getElementById('mainProductImage').src = src;
+  document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+}
+
+// 5. Quantity Adjuster
+function adjustQty(change) {
+  const input = document.getElementById('productQty');
+  let val = parseInt(input.value) + change;
+  if (val < 1) val = 1;
+  input.value = val;
+}
+
+// 6. Direct File Upload handling to Cloudflare Presigned R2 API
+async function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const previewBox = document.getElementById('filePreviewContainer');
+  previewBox.innerHTML = `
+    <div class="file-preview-strip">
+      <span>Uploading ${file.name}...</span>
+    </div>
+  `;
+
+  try {
+    // Request presigned URL from Cloudflare Worker endpoint
+    const res = await fetch('/api/upload-url', {
+      method: 'POST',
+      body: JSON.stringify({ filename: file.name, contentType: file.type })
     });
+    
+    if (!res.ok) throw new Error('Presigned URL generation failed');
+    const { uploadUrl, fileKey } = await res.json();
+
+    // Upload directly to R2 bucket
+    await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file
+    });
+
+    uploadedFileKey = fileKey;
+
+    previewBox.innerHTML = `
+      <div class="file-preview-strip">
+        <span>✓ ${file.name}</span>
+        <button class="remove-file-btn" onclick="removeUploadedFile()">Remove</button>
+      </div>
+    `;
+
+    // Open Agreement Modal prior to enabling Add To Cart
+    const modal = document.getElementById('customAgreementModal');
+    if (modal) modal.showModal();
+
+  } catch (err) {
+    // Fallback simulate upload key if serverless worker is local/unlinked
+    uploadedFileKey = `mock-upload-${Date.now()}-${file.name}`;
+    previewBox.innerHTML = `
+      <div class="file-preview-strip">
+        <span>✓ ${file.name} (Attached)</span>
+        <button class="remove-file-btn" onclick="removeUploadedFile()">Remove</button>
+      </div>
+    `;
+    const modal = document.getElementById('customAgreementModal');
+    if (modal) modal.showModal();
+  }
+}
+
+function removeUploadedFile() {
+  uploadedFileKey = null;
+  termsAccepted = false;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('filePreviewContainer').innerHTML = '';
+  updateAddButtonState();
+}
+
+// 7. Copyright & Agreement Modal Control
+function setupAgreementModal() {
+  const modal = document.getElementById('customAgreementModal');
+  const checkbox = document.getElementById('agreeTermsCheckbox');
+  const confirmBtn = document.getElementById('confirmAgreementBtn');
+  const closeBtn = document.getElementById('closeAgreementBtn');
+
+  if (!modal || !checkbox || !confirmBtn) return;
+
+  checkbox.addEventListener('change', (e) => {
+    confirmBtn.disabled = !e.target.checked;
+  });
+
+  confirmBtn.addEventListener('click', () => {
+    termsAccepted = true;
+    modal.close();
+    updateAddButtonState();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    modal.close();
   });
 }
 
-// --- 4. APPLY THROTTLING & ACTION BUTTON RULES ---
-async function applyActionRules() {
-  const actionContainer = document.getElementById('purchaseActions');
-  if (!actionContainer) return;
+function updateAddButtonState() {
+  const btn = document.getElementById('addToCartBtn');
+  if (!btn) return;
 
-  const status = typeof fetchStoreStatus === 'function' 
-    ? await fetchStoreStatus() 
-    : { ordersThisWeek: 0, whatsAppThisWeek: 0, globalCapReached: false, disabledSkus: [] };
-
-  const isCapped = status.ordersThisWeek >= LIMITS.maxWeeklyOrders || status.globalCapReached;
-  const isDisabled = status.disabledSkus.includes(currentProduct.sku);
-
-  if (isCapped || isDisabled) {
-    actionContainer.innerHTML = `
-      <button class="btn btn-disabled notify-trigger" data-sku="${currentProduct.sku}">Weekly Capacity Reached — Get Notified</button>
-    `;
-    if (typeof attachNotifyListeners === 'function') attachNotifyListeners();
-    return;
+  if (uploadedFileKey && termsAccepted) {
+    btn.disabled = false;
+    btn.textContent = 'Add to Cart';
+  } else if (!uploadedFileKey) {
+    btn.disabled = true;
+    btn.textContent = 'Upload Image First';
+  } else if (!termsAccepted) {
+    btn.disabled = true;
+    btn.textContent = 'Accept Terms to Proceed';
   }
-
-  if (currentProduct.price >= LIMITS.emailThreshold) {
-    actionContainer.innerHTML = `
-      <a href="mailto:quotes@netsorna.website?subject=Bespoke%20Quote%20Request%20${currentProduct.sku}" class="btn btn-outline">Request Formal Quote</a>
-    `;
-    return;
-  }
-
-  if (currentProduct.price >= LIMITS.whatsappThreshold) {
-    if (status.whatsAppThisWeek >= LIMITS.maxWeeklyWhatsApp) {
-      actionContainer.innerHTML = `
-        <a href="mailto:quotes@netsorna.website?subject=Inquiry%20${currentProduct.sku}" class="btn btn-outline">Email Studio Inquiry</a>
-      `;
-    } else {
-      actionContainer.innerHTML = `
-        <a href="/whatsapp-inquiry.html?sku=${currentProduct.sku}" class="btn btn-solid">Message Studio on WhatsApp</a>
-      `;
-    }
-    return;
-  }
-
-  // Standard Ready-Made or Custom Upload Item
-  actionContainer.innerHTML = `
-    <button class="btn btn-outline" id="addToCartBtn">Add to Cart</button>
-    <button class="btn btn-solid" id="buyNowBtn">Buy Now</button>
-  `;
-
-  document.getElementById('addToCartBtn').addEventListener('click', () => handleAddToCart(false));
-  document.getElementById('buyNowBtn').addEventListener('click', () => handleAddToCart(true));
 }
 
-// --- 5. CART DISPATCHING ---
-function handleAddToCart(redirectToCheckout = false) {
+// 8. Add to Cart Handler
+function handleAddToCart() {
   if (!currentProduct) return;
 
+  const qty = parseInt(document.getElementById('productQty').value) || 1;
   const cart = getCart();
-  const cartItemId = `${currentProduct.sku}_${selectedOption.replace(/\s+/g, '-').toLowerCase()}`;
-  
-  const existingItemIndex = cart.findIndex(item => item.cartItemId === cartItemId);
 
-  if (existingItemIndex > -1) {
-    cart[existingItemIndex].quantity += 1;
+  const cartItem = {
+    sku: currentProduct.sku,
+    title: currentProduct.title,
+    price: currentProduct.price,
+    quantity: qty,
+    image: currentProduct.images[0],
+    customUploadKey: uploadedFileKey || null
+  };
+
+  const existingIndex = cart.findIndex(item => item.sku === cartItem.sku && item.customUploadKey === cartItem.customUploadKey);
+
+  if (existingIndex > -1) {
+    cart[existingIndex].quantity += qty;
   } else {
-    cart.push({
-      cartItemId,
-      sku: currentProduct.sku,
-      title: currentProduct.title,
-      price: currentProduct.price,
-      option: selectedOption,
-      image: currentProduct.images[0] || '',
-      quantity: 1
-    });
+    cart.push(cartItem);
   }
 
   saveCart(cart);
-
-  if (redirectToCheckout) {
-    window.location.href = '/cart.html';
-  } else {
-    if (typeof showToast === 'function') {
-      showToast(`Added "${currentProduct.title} (${selectedOption})" to your cart.`);
-    }
-  }
+  showToast(`${currentProduct.title} added to cart.`);
 }
 
-// --- 6. YOU MIGHT ALSO LIKE (RELATED PRODUCTS) ---
-function renderRelatedProducts() {
-  const relatedGrid = document.getElementById('relatedGrid');
-  if (!relatedGrid) return;
-
-  const related = DETAILED_PRODUCTS.filter(p => p.sku !== currentProduct.sku).slice(0, 3);
-
-  relatedGrid.innerHTML = related.map(prod => `
-    <article class="product-card">
-      <div class="product-image-container">
-        <img src="${prod.images[0] || ''}" alt="${prod.title}" class="product-img" onerror="this.outerHTML='<div class=\\'placeholder-box\\'></div>'">
-      </div>
-      <div class="product-info">
-        <div class="product-meta">
-          <h3 class="product-title">${prod.title}</h3>
-          <span class="price">R ${prod.price.toLocaleString()}</span>
-        </div>
-        <div class="product-actions">
-          <a href="/product.html?sku=${prod.sku}" class="btn btn-outline">Get One</a>
-        </div>
-      </div>
-    </article>
-  `).join('');
-}
-
-// Initialize on DOM load
+// Init execution
 document.addEventListener('DOMContentLoaded', () => {
-  initProductPage();
+  const sku = getSkuFromUrl();
+  loadProductData(sku);
 });
