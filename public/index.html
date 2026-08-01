@@ -1,1 +1,229 @@
-.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Netsorna — Fine Art & Collectibles</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://netsorna.website/" />
+
+  <!-- Open Graph / WhatsApp & Social Sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://netsorna.website/" />
+  <meta property="og:title" content="Netsorna — Fine Art & Collectibles" />
+  <meta property="og:description" content="Curated fine art, relief sculptures, and custom interior pieces." />
+  <meta property="og:image" content="https://netsorna.website/images/icons/horizontal_logo.svg" />
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+
+  <!-- Favicon Setup -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+
+  <!-- Core Styles -->
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+
+  <!-- Floating Expandable Glass Header -->
+  <div class="navbar-wrapper">
+    <header class="navbar" id="navbar">
+      <!-- Top Action Bar -->
+      <div class="navbar-bar">
+        <button class="menu-btn" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="navDrawer" id="menuToggle">
+          <svg class="icon-hamburger" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="/index.html" class="brand-logo" aria-label="Netsorna Home">
+          <img 
+            src="/images/icons/horizontal_logo.svg" 
+            alt="Netsorna Logo" 
+            class="logo-img" 
+            width="160"
+            height="40"
+            onerror="this.outerHTML='<span class=\'logo-text\'>NETSORNA.</span>'"
+          />
+        </a>
+
+        <a href="/cart.html" class="cart-btn" aria-label="View Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </a>
+      </div>
+
+      <!-- Integrated Navigation Drawer -->
+      <nav class="nav-drawer" id="navDrawer" aria-hidden="true">
+        <ul class="nav-links">
+          <li><a href="/index.html" class="active">Home</a></li>
+          <li><a href="/shop.html">Shop Artworks</a></li>
+          <li><a href="/featured.html">Featured Program</a></li>
+          <li><a href="/custom-order.html">Custom Orders</a></li>
+          <li><a href="/blog.html">Blog & Stories</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </nav>
+    </header>
+  </div>
+
+  <main>
+    <!-- Featured Hero Banner -->
+    <section class="hero-section">
+      <div class="hero-bg-overlay"></div>
+      
+      <div class="featured-card">
+        <div class="featured-header">
+          <h2 class="featured-title">Featured Partner</h2>
+        </div>
+        
+        <div class="featured-content">
+          <div class="featured-body">
+            <div class="featured-image-box">
+              <img src="/images/products/featured-art.jpg" alt="Featured Relief Artwork" onerror="this.src='https://via.placeholder.com/300x300/dedad3/000000?text=Featured+Art'">
+            </div>
+            
+            <div class="featured-details">
+              <p class="quote">
+                "I really love this piece, it reminds me of when i was still young looking at my late granny's walls seeing beautiful pieces like this one"
+              </p>
+              <span class="signature">Lerato M.</span>
+            </div>
+          </div>
+
+          <div class="featured-actions">
+            <a href="/featured.html" class="btn btn-subtle">View More</a>
+            <a href="/product.html?sku=NET-FRM-001" class="btn btn-solid product-action-btn" data-sku="NET-FRM-001">Get One</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Browse Catalog Section -->
+    <section class="browse-section">
+      <h1 class="browse-heading">Browse</h1>
+      
+      <div class="product-grid" id="productGrid">
+        <!-- Rendered dynamically via JS to support live stock/weekly limits & inquiry rules -->
+      </div>
+
+      <div class="view-all-container">
+        <a href="/shop.html" class="btn btn-solid btn-lg">Explore Full Catalogue →</a>
+      </div>
+    </section>
+
+    <!-- Bespoke & High Value Catalogue Inquiries -->
+    <section class="custom-cta-section" id="messageUsCatalogue">
+      <div class="custom-cta-container">
+        <div class="custom-cta-text">
+          <h2>Bespoke & Custom Commissions</h2>
+          <p>Have a specific vision or looking for a tailor-made sculpture for your space? Direct photo uploads supported for 1-5 face artworks & custom items.</p>
+        </div>
+        <div class="cta-actions">
+          <a href="/whatsapp-inquiry.html" class="btn btn-subtle" id="whatsappCtaBtn">WhatsApp Inquiry</a>
+          <a href="/custom-order.html" class="btn btn-solid">Request Custom Order</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stories & Blog Section -->
+    <section class="stories-section">
+      <h2 class="section-title">Stories & Insights</h2>
+      <div class="stories-grid">
+        <article class="story-card">
+          <div>
+            <div class="story-header">
+              <h3>The Craft Behind Modern Linear Relief Art</h3>
+              <span class="story-date">July 2026</span>
+            </div>
+            <p>Discover how classic architectural techniques meet contemporary interior aesthetics.</p>
+          </div>
+          <a href="/blog.html" class="story-link">Read Story →</a>
+        </article>
+
+        <article class="story-card">
+          <div>
+            <div class="story-header">
+              <h3>Preserving Heritage Through Art Collectibles</h3>
+              <span class="story-date">June 2026</span>
+            </div>
+            <p>A deep dive into how memory and nostalgia shape modern gallery spaces.</p>
+          </div>
+          <a href="/blog.html" class="story-link">Read Story →</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo">netsorna.</span>
+        <p>Curated fine art, relief sculptures, and custom interior pieces.</p>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="/shop.html">Catalogue</a></li>
+          <li><a href="/featured.html">Featured Partner</a></li>
+          <li><a href="/custom-order.html">Custom Orders</a></li>
+          <li><a href="/faqs.html">FAQs</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Legal & Terms</h4>
+        <ul>
+          <li><a href="/terms.html">Terms of Service</a></li>
+          <li><a href="/privacy.html">Privacy Policy</a></li>
+          <li><a href="/refunds.html">Refund Policy</a></li>
+          <li><a href="/ownership.html">Content Ownership</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-newsletter">
+        <h4>Stay Updated</h4>
+        <p>Subscribe to receive notifications for new drops and partner releases.</p>
+        <form class="newsletter-form" action="/api/newsletter" method="POST">
+          <input type="email" placeholder="Enter your email" required />
+          <button type="submit" class="btn btn-solid">Join</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Netsorna. All rights reserved.</span>
+      <span>Fine Art & Collectibles</span>
+    </div>
+  </footer>
+
+  <!-- Modal / Dialog for 'Get Notified' when limit is reached -->
+  <dialog id="notifyModal" class="glass-modal">
+    <div class="modal-content">
+      <h3>Weekly Capacity Reached</h3>
+      <p>To preserve quality, we cap production at 40 orders/week. Enter your email to be notified when slots open next week.</p>
+      <input type="email" id="notifyEmail" placeholder="Your email address" />
+      <div class="modal-actions">
+        <button id="closeNotifyBtn" class="btn btn-subtle">Cancel</button>
+        <button id="submitNotifyBtn" class="btn btn-solid">Notify Me</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
