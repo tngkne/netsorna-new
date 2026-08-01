@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed — Netsorna</title>
+
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/shop.css" />
+</head>
+<body>
+
+  <main class="checkout-main-wrapper" style="text-align: center; padding: 60px 20px;">
+    <div style="max-width: 500px; margin: 0 auto; background: #fff; padding: 32px; border: 1px solid var(--border-color); border-radius: 6px;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" style="margin-bottom: 16px;">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">Order Confirmed!</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+        Thank you for your purchase. Your art piece is now queued for production.
+      </p>
+
+      <div style="background: #f9f9f9; padding: 12px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; margin-bottom: 24px;">
+        Order Reference: <strong id="orderRefDisplay">NET-XXXXXX</strong>
+      </div>
+
+      <a href="/shop.html" class="btn btn-solid" style="width: 100%;">Return to Catalogue</a>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Clear localStorage cart after successful payment redirect
+      localStorage.removeItem('netsorna_cart');
+      
+      const params = new URLSearchParams(window.location.search);
+      const orderId = params.get('orderId') || 'NET-' + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('orderRefDisplay').textContent = orderId;
+    });
+  </script>
+</body>
+</html>
