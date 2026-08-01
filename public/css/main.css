@@ -268,7 +268,7 @@ button,
 .hero-section {
   position: relative;
   width: 100%;
-  padding-top: 64px;
+  padding-top: 0;
   background: var(--accent-light);
   border-bottom: 1px solid var(--border-color);
 }
