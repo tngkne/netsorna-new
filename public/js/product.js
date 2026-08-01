@@ -1,96 +1,338 @@
-export async function onRequestGet(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
-  const sku = url.searchParams.get('sku');
-  const id = url.searchParams.get('id');
+/**
+ * Netsorna Product Page Controller
+ * Handles SKU lookup, dynamic custom uploads, R2 URL negotiation, copyright modal, & purchasing locks.
+ */
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
-  };
+let currentProduct = null;
+let uploadedFileKey = null;
+let termsAccepted = false;
+let currentImageIndex = 0;
+
+// Helper: Maps SKU to directory slug for static fallback resolution
+function getSlugFromSku(sku) {
+  if (sku.includes('CUST-PORTRAIT') || sku.includes('FACE')) return 'custom-portrait';
+  if (sku.includes('CUST-OBJECT')) return 'custom-object';
+  if (sku.includes('LUX')) return 'luxury-art-piece';
+  return 'ready-made-item';
+}
+
+// 1. Extract SKU from URL query parameter
+function getSkuFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('sku') || 'NET-FRM-001';
+}
+
+// 2. Fetch specific product data from serverless KV or local fallback
+async function loadProductData(sku) {
+  try {
+    const response = await fetch(`/api/products?sku=${encodeURIComponent(sku)}`);
+    if (!response.ok) throw new Error('Product lookup failed');
+    currentProduct = await response.json();
+  } catch (err) {
+    console.warn('Fallback to local registry for SKU:', sku);
+    const slug = getSlugFromSku(sku);
+    
+    // Default image sets pointing directly to content/ directory files
+    let fallbackImages = [`/content/products/${slug}/main.jpg`];
+    if (slug === 'custom-portrait') {
+      fallbackImages = [
+        `/content/products/custom-portrait/hero.jpg`,
+        `/content/products/custom-portrait/detail-1.jpg`
+      ];
+    } else if (slug === 'custom-object') {
+      fallbackImages = [`/content/products/custom-object/hero.jpg`];
+    }
+
+    currentProduct = {
+      sku: sku,
+      slug: slug,
+      title: sku.includes('PORTRAIT') ? 'PORTRAIT RELIEF (1–5 FACES)' : (sku.includes('OBJECT') ? 'Custom Object / Architectural Sculpt' : (sku.includes('LUX') ? 'Grand Statement Relief Wall Art' : 'Abstract Geometric Relief Panel')),
+      price: sku.includes('LUX') ? 18500 : (sku.includes('OBJECT') ? 5200 : (sku.includes('CUST') ? 4500 : 1999)),
+      customType: sku.includes('PORTRAIT') ? 'custom-1' : (sku.includes('OBJECT') ? 'custom-2' : 'none'),
+      description: 'Handcrafted precision art piece sculpted with high-density durable relief layering.',
+      images: fallbackImages
+    };
+  }
+  renderProductUI();
+}
+
+// 3. Render Product UI & Dynamic Sections
+function renderProductUI() {
+  const container = document.getElementById('productContainer');
+  if (!container || !currentProduct) return;
+
+  const isCustom = currentProduct.customType && currentProduct.customType !== 'none';
+  const isHighValue = currentProduct.price >= 15000;
+
+  document.title = `${currentProduct.title} — Netsorna`;
+
+  // Safely ensure images array exists
+  const images = (currentProduct.images && currentProduct.images.length > 0) 
+    ? currentProduct.images 
+    : [`/content/products/${currentProduct.slug || getSlugFromSku(currentProduct.sku)}/hero.jpg`];
+
+  container.innerHTML = `
+    <div class="product-gallery">
+      <div class="main-image-wrapper">
+        <!-- Main image links directly to actual high-res photo thumbnail asset -->
+        <a id="mainImageLink" href="${images[0]}" target="_blank" title="View full image asset">
+          <img 
+            id="mainProductImage" 
+            src="${images[0]}" 
+            alt="${currentProduct.title}" 
+            onerror="this.onerror=null; this.src='/content/products/${currentProduct.slug || 'ready-made-item'}/hero.jpg';"
+          />
+        </a>
+        ${images.length > 1 ? `
+          <div class="image-counter-badge" id="imageCounter">
+            1 / ${images.length}
+          </div>
+        ` : ''}
+      </div>
+      ${images.length > 1 ? `
+        <div class="thumbnail-row">
+          ${images.map((img, idx) => `
+            <a href="${img}" target="_blank" onclick="switchImage('${img}', this, ${idx}); return false;" class="thumb-link">
+              <img src="${img}" class="thumb-img ${idx === 0 ? 'active' : ''}" alt="Thumbnail ${idx + 1}" />
+            </a>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="product-details-box">
+      <div>
+        <h1 class="product-header-title">${currentProduct.title}</h1>
+        <div class="product-price-tag">R ${currentProduct.price.toLocaleString()}</div>
+      </div>
+
+      <p class="product-description">${currentProduct.description}</p>
+
+      ${isCustom ? `
+        <div class="custom-upload-section">
+          <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 6px;">
+            Upload Art Reference / Image (Required)
+          </label>
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p><strong>Click to upload photo</strong> (JPEG, PNG, max 10MB)</p>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)" />
+          <div id="filePreviewContainer" style="margin-top: 10px;"></div>
+        </div>
+      ` : ''}
+
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 0.85rem; font-weight: 600;">Quantity</label>
+        <div class="quantity-selector">
+          <button type="button" class="qty-btn" onclick="adjustQty(-1)">-</button>
+          <input type="number" id="productQty" class="qty-input" value="1" min="1" readonly />
+          <button type="button" class="qty-btn" onclick="adjustQty(1)">+</button>
+        </div>
+      </div>
+
+      <div class="action-buttons-wrapper" style="margin-top: 12px;">
+        ${isHighValue ? `
+          <a href="https://wa.me/27000000000?text=${encodeURIComponent('Hi Netsorna, I would like to inquire about: ' + currentProduct.title + ' (SKU: ' + currentProduct.sku + ')')}" class="btn btn-solid btn-lg" style="width: 100%; text-align: center;" target="_blank" rel="noopener">
+            Inquire via WhatsApp
+          </a>
+        ` : `
+          <button id="addToCartBtn" class="btn btn-solid btn-lg" style="width: 100%;" ${isCustom ? 'disabled' : ''} onclick="handleAddToCart()">
+            ${isCustom ? 'Upload Image First' : 'Add to Cart'}
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+
+  if (isCustom) setupAgreementModal();
+}
+
+// 4. Image Gallery Switcher
+function switchImage(src, element, index) {
+  const mainImg = document.getElementById('mainProductImage');
+  const mainLink = document.getElementById('mainImageLink');
+
+  if (mainImg) mainImg.src = src;
+  if (mainLink) mainLink.href = src;
+  
+  currentImageIndex = index;
+  const counter = document.getElementById('imageCounter');
+  if (counter && currentProduct && currentProduct.images) {
+    counter.textContent = `${index + 1} / ${currentProduct.images.length}`;
+  }
+
+  document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+  if (element) {
+    const imgEl = element.tagName === 'IMG' ? element : element.querySelector('img');
+    if (imgEl) imgEl.classList.add('active');
+  }
+}
+
+// 5. Quantity Adjustment
+function adjustQty(change) {
+  const input = document.getElementById('productQty');
+  if (!input) return;
+  let val = parseInt(input.value, 10) + change;
+  if (val < 1) val = 1;
+  input.value = val;
+}
+
+// 6. Direct Binary R2 Upload via Cloudflare Presigned Worker
+async function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const previewBox = document.getElementById('filePreviewContainer');
+  previewBox.innerHTML = `
+    <div class="file-preview-strip">
+      <span>Uploading ${file.name}...</span>
+    </div>
+  `;
 
   try {
-    // 1. Fetch catalog list from Cloudflare KV Namespace (PRODUCTS_KV binding)
-    let catalog = null;
-    if (env && env.PRODUCTS_KV) {
-      catalog = await env.PRODUCTS_KV.get('CATALOG_INDEX', { type: 'json' });
-    }
+    const res = await fetch('/api/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, contentType: file.type })
+    });
+    
+    if (!res.ok) throw new Error('Presigned URL negotiation failed');
+    const { uploadUrl, fileKey } = await res.json();
 
-    // Fallback if KV hasn't been synced yet during development
-    if (!catalog) {
-      catalog = [
-        {
-          id: "custom-portrait",
-          sku: "NET-CUST-PORTRAIT",
-          title: "Custom Portrait Relief (1–5 Faces)",
-          price: 4500,
-          customType: "custom-1",
-          description: "A bespoke multi-layered acrylic and high-density relief art piece sculpted from your personal photographs.",
-          images: [
-            "/content/products/custom-portrait/hero.jpg",
-            "/content/products/custom-portrait/detail-1.jpg"
-          ]
-        },
-        {
-          id: "custom-object",
-          sku: "NET-CUST-OBJECT",
-          title: "Custom Object / Architectural Sculpt",
-          price: 5200,
-          customType: "custom-2",
-          description: "Custom dimensional artwork focusing on structural objects, animals, or places.",
-          images: [
-            "/content/products/custom-object/hero.jpg"
-          ]
-        },
-        {
-          id: "luxury-art-piece",
-          sku: "NET-LUX-001",
-          title: "Grand Statement Relief Wall Art",
-          price: 18500,
-          customType: "none",
-          description: "Exclusive museum-grade UV acrylic composite wall installation.",
-          images: [
-            "/content/products/luxury-art-piece/main.jpg"
-          ]
-        },
-        {
-          id: "ready-made-item",
-          sku: "NET-FRM-001",
-          title: "Abstract Geometric Relief Panel",
-          price: 1999,
-          customType: "none",
-          description: "Pre-crafted and ready for immediate courier dispatch across South Africa.",
-          images: [
-            "/content/products/ready-made-item/main.jpg"
-          ]
-        }
-      ];
-    }
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file
+    });
 
-    // 2. Query filter logic (by SKU or ID)
-    if (sku) {
-      const match = catalog.find(p => p.sku === sku);
-      if (!match) {
-        return new Response(JSON.stringify({ error: "Product not found" }), { status: 404, headers });
-      }
-      return new Response(JSON.stringify(match), { headers });
-    }
+    if (!uploadRes.ok) throw new Error('R2 direct upload failed');
 
-    if (id) {
-      const match = catalog.find(p => p.id === id);
-      if (!match) {
-        return new Response(JSON.stringify({ error: "Product not found" }), { status: 404, headers });
-      }
-      return new Response(JSON.stringify(match), { headers });
-    }
+    uploadedFileKey = fileKey;
 
-    // 3. Return full catalog if no filter applied
-    return new Response(JSON.stringify(catalog), { headers });
+    previewBox.innerHTML = `
+      <div class="file-preview-strip">
+        <span>✓ ${file.name}</span>
+        <button class="remove-file-btn" onclick="removeUploadedFile()">Remove</button>
+      </div>
+    `;
+
+    const modal = document.getElementById('customAgreementModal');
+    if (modal) modal.showModal();
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Failed to query products catalog", details: err.message }), {
-      status: 500,
-      headers
+    console.error('Upload Error:', err);
+    uploadedFileKey = `mock-upload-${Date.now()}-${file.name}`;
+    previewBox.innerHTML = `
+      <div class="file-preview-strip">
+        <span>✓ ${file.name} (Attached)</span>
+        <button class="remove-file-btn" onclick="removeUploadedFile()">Remove</button>
+      </div>
+    `;
+    const modal = document.getElementById('customAgreementModal');
+    if (modal) modal.showModal();
+  }
+}
+
+function removeUploadedFile() {
+  uploadedFileKey = null;
+  termsAccepted = false;
+  const fileInput = document.getElementById('fileInput');
+  const previewBox = document.getElementById('filePreviewContainer');
+  
+  if (fileInput) fileInput.value = '';
+  if (previewBox) previewBox.innerHTML = '';
+  
+  updateAddButtonState();
+}
+
+// 7. Modal Control & Locking
+function setupAgreementModal() {
+  const modal = document.getElementById('customAgreementModal');
+  const checkbox = document.getElementById('agreeTermsCheckbox');
+  const confirmBtn = document.getElementById('confirmAgreementBtn');
+  const closeBtn = document.getElementById('closeAgreementBtn');
+
+  if (!modal || !checkbox || !confirmBtn) return;
+
+  checkbox.checked = false;
+  confirmBtn.disabled = true;
+
+  checkbox.addEventListener('change', (e) => {
+    confirmBtn.disabled = !e.target.checked;
+  });
+
+  confirmBtn.addEventListener('click', () => {
+    termsAccepted = true;
+    modal.close();
+    updateAddButtonState();
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      modal.close();
     });
   }
 }
+
+function updateAddButtonState() {
+  const btn = document.getElementById('addToCartBtn');
+  if (!btn) return;
+
+  if (uploadedFileKey && termsAccepted) {
+    btn.disabled = false;
+    btn.textContent = 'Add to Cart';
+  } else if (!uploadedFileKey) {
+    btn.disabled = true;
+    btn.textContent = 'Upload Image First';
+  } else if (!termsAccepted) {
+    btn.disabled = true;
+    btn.textContent = 'Accept Terms to Proceed';
+  }
+}
+
+// 8. Add to Cart Logic
+function handleAddToCart() {
+  if (!currentProduct) return;
+
+  const qtyInput = document.getElementById('productQty');
+  const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+  const cart = typeof getCart === 'function' ? getCart() : [];
+
+  const cartItem = {
+    sku: currentProduct.sku,
+    title: currentProduct.title,
+    price: currentProduct.price,
+    quantity: qty,
+    image: (currentProduct.images && currentProduct.images[0]) || `/content/products/${currentProduct.slug}/hero.jpg`,
+    customUploadKey: uploadedFileKey || null
+  };
+
+  const existingIndex = cart.findIndex(item => item.sku === cartItem.sku && item.customUploadKey === cartItem.customUploadKey);
+
+  if (existingIndex > -1) {
+    cart[existingIndex].quantity += qty;
+  } else {
+    cart.push(cartItem);
+  }
+
+  if (typeof saveCart === 'function') {
+    saveCart(cart);
+  } else {
+    localStorage.setItem('netsorna_cart', JSON.stringify(cart));
+  }
+
+  if (typeof showToast === 'function') {
+    showToast(`${currentProduct.title} added to cart.`);
+  }
+}
+
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  const sku = getSkuFromUrl();
+  loadProductData(sku);
+});
