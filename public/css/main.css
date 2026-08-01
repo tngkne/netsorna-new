@@ -19,10 +19,15 @@
   --card-bg-glass: rgba(255, 255, 255, 0.48);
 }
 
-* {
+/* UNIVERSAL BOX-SIZING & BASE RESETS */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -35,6 +40,34 @@ body {
 
 body.menu-open {
   overflow: hidden;
+}
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* MINIMUM TOUCH TARGET SIZING */
+button, 
+.btn, 
+.qty-btn, 
+.menu-btn, 
+.cart-btn {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* CONTAINER PADDING RESPONSIVENESS */
+.product-page-main,
+.checkout-grid,
+.cart-layout {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: clamp(12px, 4vw, 32px);
+  padding-right: clamp(12px, 4vw, 32px);
 }
 
 /* FLOATING NAVBAR CONTAINER */
@@ -235,7 +268,7 @@ body.menu-open {
 .hero-section {
   position: relative;
   width: 100%;
-  padding-top: 64px; /* Space for fixed floating header */
+  padding-top: 64px;
   background: var(--accent-light);
   border-bottom: 1px solid var(--border-color);
 }
@@ -305,8 +338,13 @@ body.menu-open {
 .footer-links-group a { text-decoration: none; color: var(--text-muted); font-size: 0.8rem; }
 .footer-newsletter p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
 .newsletter-form { display: flex; gap: 8px; }
-.newsletter-form input { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 2px; font-size: 0.8rem; }
-.footer-bottom { border-top: 1px solid #eee; padding-top: 16px; display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); }
+.newsletter-form input { 
+  flex: 1; 
+  padding: 10px; 
+  border: 1px solid var(--border-color); 
+  border-radius: 2px; 
+  font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+}
 
 /* MODALS */
 .glass-modal {
@@ -326,9 +364,65 @@ body.menu-open {
   flex-direction: column;
   gap: 12px;
 }
-.glass-modal input { padding: 10px; border: 1px solid #ccc; font-size: 0.85rem; border-radius: 3px; }
+.glass-modal input { 
+  padding: 10px; 
+  border: 1px solid #ccc; 
+  font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  border-radius: 3px; 
+}
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
+/* ==========================================
+   BREAKPOINTS & RESPONSIVE ADAPTATIONS
+   ========================================== */
+
+/* 📱 SMALL MOBILE DEVICES (≤ 480px) */
+@media (max-width: 480px) {
+  .product-page-main {
+    padding-top: 76px;
+    padding-bottom: 24px;
+  }
+
+  .product-header-title {
+    font-size: 1.4rem;
+  }
+
+  .product-price-tag {
+    font-size: 1.1rem;
+  }
+
+  .checkout-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .thumbnail-row {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .thumb-img {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* 📱/💻 TABLET PORTRAIT & LANDSCAPE (481px to 1024px) */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .product-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .checkout-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+/* 💻 DESKTOP & LARGE SCREENS (≥ 768px & ≥ 1025px) */
 @media (min-width: 768px) {
   .product-grid { grid-template-columns: repeat(4, 1fr); }
   .product-card:nth-child(2n) { border-right: 1px solid var(--border-color); }
@@ -336,4 +430,22 @@ body.menu-open {
   .custom-cta-container { flex-direction: row; justify-content: space-between; align-items: center; }
   .stories-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-top { grid-template-columns: 2fr 1fr 1fr 2fr; }
+}
+
+@media (min-width: 1025px) {
+  .product-container {
+    grid-template-columns: 55% 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .checkout-grid {
+    grid-template-columns: 1.4fr 1fr !important;
+    gap: 40px !important;
+  }
+
+  .product-details-box {
+    position: sticky;
+    top: 90px;
+  }
 }
