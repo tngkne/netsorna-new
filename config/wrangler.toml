@@ -1,1 +1,21 @@
-.
+name = "netsorna-wb"
+main = "functions/api/checkout.js"
+compatibility_date = "2026-08-01"
+
+[site]
+bucket = "./public"
+
+# Cloudflare KV Binding for Site Settings, Order Counters, and Limits
+[[kv_namespaces]]
+binding = "NETSORNA_STORE_KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# Cloudflare R2 Bucket Binding for Customer Uploaded Photos
+[[r2_buckets]]
+binding = "UPLOADS_BUCKET"
+bucket_name = "netsorna-custom-uploads"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+YOCO_PUBLIC_KEY = "pk_live_your_yoco_public_key"
