@@ -1,0 +1,13 @@
+{
+  "maxWeeklyOrders": 40,
+  "maxWeeklyWhatsAppLeads": 10,
+  "priceThresholds": {
+    "whatsappInquiry": 15000,
+    "formalEmailQuote": 25000
+  },
+  "uploads": {
+    "maxPhotosPerCustomOrder": 5,
+    "maxFileSizeMB": 10,
+    "allowedFormats": ["image/jpeg", "image/png", "image/webp"]
+  }
+}
