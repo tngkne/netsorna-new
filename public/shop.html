@@ -64,8 +64,9 @@
     <!-- Standard & Custom Art Grid -->
     <section class="shop-grid-section">
       <h2 class="section-title">Catalogue & Commissions</h2>
-      <div class="product-grid" id="catalogueGrid">
-        <!-- Rendered dynamically -->
+      <!-- Standardized ID target to match main.js -->
+      <div class="product-grid" id="productGrid">
+        <!-- Rendered dynamically by main.js -->
       </div>
     </section>
 
@@ -78,9 +79,9 @@
           <span class="badge-gold">Bespoke Interior & Luxury</span>
           <h2>Grand Statement Relief Panels</h2>
           <p>Large-format multi-piece acrylic wall art installations over R15,000 are produced exclusively by personal consultation.</p>
-          <button id="luxuryWhatsappBtn" class="btn btn-gold btn-lg" onclick="handleWhatsappInquiry('NET-LUX-001', 'Grand Statement Relief Panel')">
+          <a href="/whatsapp-inquiry.html?sku=NET-LUX-001" id="luxuryWhatsappBtn" class="btn btn-gold btn-lg">
             Inquire via WhatsApp
-          </button>
+          </a>
         </div>
       </div>
     </section>
@@ -92,34 +93,8 @@
     </div>
   </footer>
 
+  <!-- Centralized JS dependencies -->
   <script src="/js/main.js"></script>
   <script src="/js/whatsapp.js"></script>
-  <script>
-    // Fetch and render catalogue items
-    document.addEventListener('DOMContentLoaded', async () => {
-      const grid = document.getElementById('catalogueGrid');
-      try {
-        const res = await fetch('/api/products');
-        const products = await res.json();
-
-        grid.innerHTML = products.map(item => `
-          <div class="product-card">
-            <a href="/product.html?sku=${item.sku}">
-              <img src="${item.images[0]}" alt="${item.title}" class="product-card-img" />
-            </a>
-            <div class="product-card-info">
-              <h3><a href="/product.html?sku=${item.sku}">${item.title}</a></h3>
-              <div class="product-card-price">R ${item.price.toLocaleString()}</div>
-              <a href="/product.html?sku=${item.sku}" class="btn btn-outline" style="width: 100%; text-align: center; margin-top: 10px;">
-                ${item.customType && item.customType !== 'none' ? 'Customize & Order' : 'View Details'}
-              </a>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error('Failed to load products:', err);
-      }
-    });
-  </script>
 </body>
 </html>
