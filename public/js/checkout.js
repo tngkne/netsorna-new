@@ -1,114 +1,44 @@
-/**
- * Netsorna Checkout Controller
- * Renders summary, checks order cap limits, and negotiates Yoco payment sessions.
- */
+// public/js/checkout.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  initCheckout();
-});
+// Your test public key (safe to expose in frontend)
+const YOCO_PUBLIC_KEY = 'pk_test_9e87d40f5E4Mmokee984';
 
-function initCheckout() {
-  const cart = getCart();
-
-  if (!cart || cart.length === 0) {
-    window.location.href = '/cart.html';
-    return;
-  }
-
-  // 1. Check if any cart item is custom to show custom notes field
-  const containsCustomItem = cart.some(item => item.customUploadKey);
-  if (containsCustomItem) {
-    const customSec = document.getElementById('customNotesSection');
-    if (customSec) customSec.style.display = 'block';
-  }
-
-  // 2. Render summary list
-  const listContainer = document.getElementById('summaryItemsList');
-  const totalContainer = document.getElementById('summaryTotalAmount');
-
-  let subtotal = 0;
-  listContainer.innerHTML = cart.map(item => {
-    const itemTotal = item.price * item.quantity;
-    subtotal += itemTotal;
-    return `
-      <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
-        <span>${item.title} (x${item.quantity})</span>
-        <span style="font-weight: 500;">R ${itemTotal.toLocaleString()}</span>
-      </div>
-    `;
-  }).join('');
-
-  totalContainer.textContent = `R ${subtotal.toLocaleString()}`;
-}
-
-async function submitOrder(event) {
-  event.preventDefault();
-
-  const submitBtn = document.getElementById('payButton');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Processing...';
-
-  const cart = getCart();
-  const orderPayload = {
-    customer: {
-      name: document.getElementById('custName').value,
-      email: document.getElementById('custEmail').value,
-      phone: document.getElementById('custPhone').value,
-      address: {
-        street: document.getElementById('streetAddress').value,
-        city: document.getElementById('city').value,
-        postalCode: document.getElementById('postalCode').value,
-        province: document.getElementById('province').value
-      }
-    },
-    customNotes: document.getElementById('customNotes')?.value || '',
-    items: cart,
-    amount: cart.reduce((acc, i) => acc + (i.price * i.quantity), 0)
-  };
+async function initiateCheckout() {
+  // Example cart
+  const cart = [
+    { name: 'T-Shirt', quantity: 1, price: 25000 } // price in cents = R250.00
+  ];
+  const totalAmount = 250; // Rands
+  const customerEmail = document.getElementById('email').value || 'test@example.com';
+  const redirectBase = window.location.origin;
 
   try {
-    // 1. First check weekly order limits against Cloudflare Workers API
-    const limitCheck = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload)
-    });
-
-    const limitResult = await limitCheck.json();
-
-    if (!limitCheck.ok || limitResult.capReached) {
-      alert('Order capacity for this week has been reached. Please check back next week or join our notification list.');
-      window.location.href = '/shop.html';
-      return;
-    }
-
-    // 2. Initialize Yoco payment session via Worker backend endpoint
-    const paymentRes = await fetch('/api/payment-intent', {
+    const response = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amountInCents: orderPayload.amount * 100,
-        currency: 'ZAR',
-        metadata: { orderId: limitResult.orderId }
+        items: cart,
+        totalAmountCents: totalAmount * 100, // Convert to cents
+        customerEmail: customerEmail,
+        redirectUrl: redirectBase
       })
     });
 
-    const paymentData = await paymentRes.json();
+    const data = await response.json();
 
-    if (paymentData.redirectUrl) {
-      // Clear cart on successful handoff to payment gateway
-      saveCart([]);
-      window.location.href = paymentData.redirectUrl;
+    if (data.checkoutUrl) {
+      // Redirect to Yoco's secure payment page
+      window.location.href = data.checkoutUrl;
     } else {
-      // Fallback for local sandbox or direct success routing
-      saveCart([]);
-      window.location.href = `/success.html?orderId=${limitResult.orderId || 'NET-DEMO-1001'}`;
+      console.error('Checkout failed:', data.error);
+      alert('Payment failed: ' + (data.error?.message || 'Unknown error'));
     }
 
-  } catch (err) {
-    console.error('Checkout error:', err);
-    alert('An unexpected error occurred. Please try again.');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Pay with Yoco';
+  } catch (error) {
+    console.error('Network error:', error);
+    alert('Could not connect to payment server.');
   }
 }
+
+// Attach to button
+document.getElementById('pay-button').addEventListener('click', initiateCheckout);
