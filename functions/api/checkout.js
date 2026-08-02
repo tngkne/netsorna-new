@@ -1,39 +1,57 @@
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
+// functions/api/checkout.js
+export async function onRequestPost(context) {
+  const { request, env } = context;
 
-    // Secure API Route handling the checkout
-    if (url.pathname === "/api/create-checkout" && request.method === "POST") {
-      try {
-        const body = await request.json();
-        
-        // This securely pulls your hidden runtime secret key
-        const secretKey = env.YOCO_SECRET_KEY; 
+  try {
+    const { items, totalAmountCents, customerEmail, redirectUrl } = await request.json();
 
-        const response = await fetch("https://yoco.com", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${secretKey}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            amount: body.amount,
-            currency: "ZAR",
-            successUrl: body.successUrl
-          })
-        });
-
-        const data = await response.json();
-        return new Response(JSON.stringify(data), {
-          headers: { "Content-Type": "application/json" }
-        });
-
-      } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
-      }
+    // Validate minimum amount: R2.00 = 200 cents cite🛠web_search:3#0:~:text=Payments less than...200 cents, aren't accepted
+    if (!totalAmountCents || totalAmountCents < 200) {
+      return new Response(
+        JSON.stringify({ error: 'Minimum payment is R2.00 (200 cents)' }), 
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Crucial: Fall back to serving your static repository assets
-    return env.ASSETS.fetch(request);
+    const payload = {
+      amount: totalAmountCents,
+      currency: 'ZAR',
+      successUrl: `${redirectUrl}/success`,
+      cancelUrl: `${redirectUrl}/cancel`,
+      failureUrl: `${redirectUrl}/failure`,
+      metadata: {
+        orderItems: JSON.stringify(items),
+        customerEmail: customerEmail,
+      }
+    };
+
+    const response = await fetch('https://online.yoco.com/v1/checkouts/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${env.YOCO_SECRET_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return new Response(
+        JSON.stringify({ error: data }), 
+        { status: response.status, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ checkoutUrl: data.redirectUrl, checkoutId: data.id }), 
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }), 
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
-};
+}
