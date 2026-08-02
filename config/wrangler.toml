@@ -1,16 +1,18 @@
 name = "my-store"
+compatibility_date = "2024-01-01"
 pages_build_output_dir = "public"
 
-# Bindings for KV and R2
+# Cloudflare KV Bindings
 [[kv_namespaces]]
 binding = "ORDERS_KV"
 id = "<YOUR_KV_NAMESPACE_ID>"
 
+# Cloudflare R2 Bindings for Custom Uploads
 [[r2_buckets]]
 binding = "CUSTOM_UPLOADS"
-bucket_name = "<YOUR_R2_BUCKET_NAME>"
+bucket_name = "netsorna-custom-uploads"
 
-# Environment Variables (Public/Non-encrypted config)
+# Environment Variables (Non-sensitive)
 [vars]
 YOCO_PUBLIC_KEY = "pk_test_9e87d40f5E4Mmokee984"
-YOCO_SECRET_KEY = "sk_test_ad3574baP4560Lq3f0b40ab9d9a7"
+ENVIRONMENT = "development"
