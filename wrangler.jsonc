@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "netsorna-new",
+  "name": ,
   "main": "functions/api/checkout.js",
   "compatibility_date": "2026-01-01",
   "assets": {
