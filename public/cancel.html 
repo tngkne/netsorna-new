@@ -2,7 +2,7 @@
 <html>
 <head><title>Payment Cancelled</title></head>
 <body style="font-family:Arial; text-align:center; padding:50px;">
-  <h1>❌ Payment Cancelled</h1>
+  <h1> Payment Cancelled</h1>
   <p>You cancelled the payment. Your cart is still saved.</p>
   <a href="/cart.html">Try Again</a>
 </body>
